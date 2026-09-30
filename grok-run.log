@@ -1,0 +1,22 @@
+I'll start by reading the product and ticket docs so the single-file game matches the spec.The spec is a self-contained side-scrolling race with solo time trials and local AI. I’ll build it as one offline `index.html` and then syntax-check the script.Autopilot finishes in about 71 seconds with no script errors. Next I’ll check a full versus race and look at the menu and mid-track screens.「童話衝刺」(Tales Dash) is in `index.html` — one offline file, canvas art and WebAudio only, no external requests.
+
+**Play**
+- Side-scrolling fairy-tale race of about 11700 units. A strong run is roughly 70 seconds.
+- Move, double jump, and dash (stamina refills slowly). Pits and thorn bushes send you back to the last checkpoint and add 2 seconds（+2 秒）.
+- Jump-pad mushrooms launch you onto an upper shortcut that skips the mud and the wide pit.
+- Stars give a short speed boost. Three checkpoints, then a castle finish.
+
+**Modes**
+- **自己玩** — timer, best time in `localStorage` (`talesdash_best`), 「新紀錄！」 when you beat it.
+- **同電腦鬥** — 3–5 AI (default 4): 小兔寶、南瓜仔、糖糖、星星妹、蘑菇叔. Live rank by progress. After you finish, they keep running until everyone finishes or 20 seconds pass. Results show 名次 / 跑手 / 時間, with 未完成 for anyone who does not finish. Best time is solo only.
+
+**Controls**
+- Keyboard: ← → or A D, Space / ↑ / W jump, Shift or K dash, P or Esc pause, R restart.
+- Touch: ◀ ▶, 跳, 衝 (64px or larger, safe-area aware). Right + jump can be held together.
+
+**Checks**
+- `node --check` passed.
+- Headless play: countdown, solo autopilot finish about 71.5 seconds with the best time saved, versus race with 星星妹 about 5 seconds behind, pit respawn showing 「+2 秒」, and no console errors.
+- Portrait 390×844 keeps the world at least 600 units wide. Landscape stays readable.
+
+`window.__td` exposes `state()`, `start(mode, aiCount)`, `autopilot(on)`, and `timeScale(n)`.
