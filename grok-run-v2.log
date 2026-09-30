@@ -1,0 +1,15 @@
+I'll start by reading the product and ticket docs and the current project layout so the 3D chase-camera race is built from scratch in this directory only.The v1 side-scroller is out. I’ll rebuild this as a behind-the-runner 3D race: track, physics, HUD, and a single bundled `index.html`.The page shell is in place. Next I’ll write the chase-camera game module: track, runners, race rules, and the test hook.Auto-compacting conversation (83% full)...
+Conversation compacted.
+The chase-camera game is written; next I’ll check it against the Three.js frame rules, build the single-file page, and playtest it.The track’s side vector is the mirror of a runner’s right, which would invert steering. I’ll correct that frame, keep the road facing upward, and then build.The road faces up and the chase camera’s right matches the track. Next I’ll load the built page and run through the race.The chase view, fall, and finish all work. The runners read as blobs from behind, the touch buttons wash out on the grass, and the player starts last — I’ll fix those and recheck the race.The whole field is stuck at the gap: even the strong autopilot never lands the first blocks. I’ll fix that jump.「童話衝刺」is a 3D chase-camera race. `node build.mjs` succeeded and wrote a single-file `index.html` (about 546 KB, three.js inlined).
+
+You run behind a pack of chibi runners on a candy-striped road about 600 m long. The course is a sky-drop start with boost pads, hurdles, floating blocks over a real gap, then rolling balls, swinging hammers, springboards, and a castle goal. The camera sits behind the runner. Solo and versus, pause, results (versus uses a 3D podium), and the rotate hint are all in place. Art is three.js primitives only. The scene is about 35,000 triangles. `window.__td` can start a race, teleport, force a fall, turn on autopilot, and change the time scale.
+
+**Limitations**
+
+- A strong run is about 61–64 s. The fastest computer runners land around 69–75 s, so a clean dash-and-landing-dash race should win. Weaker runners often fall on the blocks or hedges and can be marked unfinished if the winner is very fast.
+- Name tags only show for runners just ahead of you, so the start is less cluttered.
+- Countdown beeps stay silent until the first tap or key, because audio unlocks on a gesture.
+
+real	70m0.721s
+user	0m42.999s
+sys	0m11.716s

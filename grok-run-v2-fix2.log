@@ -1,0 +1,31 @@
+I'll start by reading the AI race logic and the podium scene so the balance and layout changes stay targeted.The field is spreading because a missed block jump respawns an AI onto the same edge and they miss it again. I'll cap that, add a small catch-up boost, and rebuild the podium so the steps and numbers read clearly.The podium reads in landscape, but portrait crops the “2” block, and the autopilot pack is still a little too tight. I’ll log where the falls and knockdowns happen and retune from that.The AI pack is tight enough to match the target windows, and the results podium now reads as three numbered steps. `node build.mjs` completed with no console errors in the headless races.
+
+## AI times
+
+The race seed is fixed, so repeat runs matched exactly (2 idle, 2 autopilot, plus the tuning pass). No page errors.
+
+**Idle player** (no steer or dash). First AI at 64.30 s, so the 10 s clock closes at 74.30 s. Six of seven AI finish inside it.
+
+| AI | Time | Falls | Knock-downs |
+|---|---|---|---|
+| 糖糖 | 64.30 s | 0 | 3 |
+| 小兔寶 | 67.13 s | 0 | 2 |
+| 星星妹 | 69.67 s | 0 | 3 |
+| 南瓜仔 | 70.88 s | 0 | 1 (hurdle) |
+| 豆豆 | 71.42 s | 0 | 1 |
+| 雪球 | 72.60 s | 0 | 1 |
+| 蘑菇叔 | 未完成 | 0 | 3 |
+
+Best 64.3 s, median 70.9 s. 蘑菇叔 was about 15 m short when time expired, a mid-70s pace.
+
+**Autopilot player:** 58.97 s, 0 falls, 0 knock-downs. Two AI finish inside the 10 s window: 糖糖 64.10 s and 星星妹 64.17 s. The other five are 未完成 (one fall, for 蘑菇叔).
+
+What changed in the race logic: a missed gap jump no longer repeats on the same edge, and after a fall that section’s mistake chance is halved (a third fall is blocked). AI more than 25 m behind the leader get +3% to +6% speed. The player never gets that boost. Ball and hammer dodges were tightened so one hit does not turn into a stuck loop on the finish wall. Mistakes still show up as hurdle, hammer, ball, and the occasional gap fall.
+
+## Podium
+
+The versus results podium is three larger blocks: 1 in the centre (gold trim), 2 on the left (silver), 3 on the right (bronze), on a candy base with a round stage disc. Each front face has a large canvas number. The other five runners stand behind and beside the steps, so they don’t cover the numbers. Landscape still puts the podium on the left and the table on the right. Portrait still puts the podium on top and the table on the bottom.
+
+real	32m24.394s
+user	0m44.865s
+sys	0m14.465s

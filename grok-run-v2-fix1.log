@@ -1,0 +1,15 @@
+I'll start by reading the spec and the current game sources so the camera, menu, podium, and checkpoint fixes stay targeted.The spec is clear. Next I’ll locate the camera, menu, podium, fog, gates, teleport, and ball code so each fix stays local.The portrait race shot and the camera math should show why the runner sits too high. I’ll check those next, then edit.The screenshots match the review: the portrait runner is too close, the landscape menu drops the how-to, and the results card covers the podium. I’ll tune the camera framing in a small script, then apply the edits.The portrait camera, landscape menu, and podium framing are the main layout bugs. I’ll edit those next, along with the arch, fog, gates, teleport, and balls.Portrait framing and the landscape menu check out. Next I’ll screenshot the block gate, the balls, and the finish camera.The nine review fixes are in `src/index.html` and `src/game.js`, and `node build.mjs` wrote a clean `index.html`. Headless Chrome reported no console errors.
+
+- **Portrait camera.** On a tall screen the chase camera sits further back and higher (back 7, up 4.6, FOV 76). At 390×844 the runner is centered and about 65% down the screen, roughly 11% of the screen height. Landscape framing is unchanged (about 66% down).
+- **Landscape menu.** At 844×390 the card is two columns: title, best time, and mode buttons on the left, 「玩法」 and the keyboard line on the right. Nothing scrolls. The portrait menu is still a single stacked card.
+- **Podium.** In landscape the results table is a compact panel on the right 45%, and the camera frames the top three in the left half. In portrait the table stays in the bottom half. Name tags show only for the top 3.
+- **GOAL.** The arch is tall enough that the chase camera passes under the banner. After the finish it eases to a front-side view of the runner cheering, with the arch behind, while they jog to a stop.
+- **Colour.** Fog is now a light sky blue from 90 to 260. Section 1 is pink/cream, section 2 is a mint/teal track with solid white lane lines, and section 4 is lemon/orange. Lane lines stay white.
+- **Checkpoint gates.** Posts and the banner sit at about 6.7 m, so the bar no longer cuts across the view.
+- **`teleport(s, x)`** into the block gap snaps onto the nearest solid block. `forceFall()` still drops off the side.
+- **Balls.** Bright candy stripes, and the first ones spawn just after checkpoint 4, inside the chase view.
+- **`window.__td.camInfo()`** returns `{cam, player, forward, screen}` with the runner’s projected position in 0..1.
+
+real	19m50.051s
+user	0m30.073s
+sys	0m6.162s
