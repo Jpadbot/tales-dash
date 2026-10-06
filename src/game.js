@@ -350,6 +350,11 @@ let ballIntro = false;
 let blockMesh = null, ballMesh = null, padMesh = null, shadowMesh = null, tileMesh = null;
 let podium, confetti, confData;
 let closeupId = null;
+let present = null;
+let presentT = 0;
+let stageMesh = null;
+const presentBox = new THREE.Box3();
+const presentTmp = new THREE.Box3();
 
 let screen = 'menu';
 let mode = null;
@@ -567,8 +572,8 @@ function stripeColorGeo(geo, bands, c1, c2) {
   g.computeVertexNormals();
   return g;
 }
-function spottedCap() {
-  const g = new THREE.SphereGeometry(0.72, 8, 6).toNonIndexed();
+function spottedCap(segW, segH) {
+  const g = new THREE.SphereGeometry(0.72, segW || 8, segH || 6).toNonIndexed();
   const pa = g.attributes.position;
   const col = new Float32Array(pa.count * 3);
   for (let i = 0; i < pa.count; i++) {
@@ -633,23 +638,24 @@ function mergeParts(parts) {
 }
 function initGeos() {
   gradMap = makeGradient();
-  GEO.head = new THREE.SphereGeometry(0.39, 12, 9);
-  GEO.eyeWhite = new THREE.SphereGeometry(0.09, 8, 6);
-  GEO.pupil = new THREE.SphereGeometry(0.042, 6, 4);
-  GEO.glint = new THREE.SphereGeometry(0.018, 4, 3);
+  GEO.head = new THREE.SphereGeometry(0.39, 16, 11);
+  GEO.eyeWhite = new THREE.SphereGeometry(0.09, 6, 5);
+  GEO.pupil = new THREE.SphereGeometry(0.042, 8, 6);
+  GEO.glint = new THREE.SphereGeometry(0.018, 5, 4);
   GEO.eye = GEO.pupil;
-  GEO.cheek = new THREE.SphereGeometry(0.07, 6, 4);
-  GEO.smile = new THREE.TorusGeometry(0.07, 0.016, 3, 8, Math.PI);
+  GEO.cheek = new THREE.SphereGeometry(0.07, 8, 6);
+  GEO.smile = new THREE.TorusGeometry(0.07, 0.016, 5, 12, Math.PI);
   GEO.smile.rotateZ(Math.PI);
-  GEO.mouthO = new THREE.SphereGeometry(0.045, 6, 4);
-  GEO.torso = new THREE.SphereGeometry(0.27, 10, 8);
-  GEO.belly = new THREE.SphereGeometry(0.12, 6, 4);
-  GEO.arm = new THREE.CylinderGeometry(0.055, 0.06, 0.28, 6);
-  GEO.hand = new THREE.SphereGeometry(0.055, 6, 4);
-  GEO.leg = new THREE.CylinderGeometry(0.07, 0.075, 0.32, 6);
-  GEO.shoe = new THREE.SphereGeometry(0.09, 6, 4);
-  GEO.earIn = new THREE.SphereGeometry(0.035, 5, 4);
-  GEO.bow = new THREE.SphereGeometry(0.08, 6, 4);
+  GEO.mouthO = new THREE.SphereGeometry(0.045, 8, 6);
+  GEO.torso = new THREE.SphereGeometry(0.27, 12, 9);
+  GEO.belly = new THREE.SphereGeometry(0.12, 8, 6);
+  GEO.arm = new THREE.CylinderGeometry(0.055, 0.06, 0.28, 8);
+  GEO.hand = new THREE.SphereGeometry(0.055, 8, 6);
+  GEO.leg = new THREE.CylinderGeometry(0.07, 0.075, 0.32, 8);
+  GEO.shoe = new THREE.SphereGeometry(0.09, 8, 6);
+  GEO.earIn = new THREE.SphereGeometry(0.035, 8, 6);
+  GEO.bow = new THREE.SphereGeometry(0.08, 8, 6);
+  GEO.bun = new THREE.SphereGeometry(0.32, 10, 8);
   GEO.star = new THREE.OctahedronGeometry(0.11, 0);
   GEO.xbar = new THREE.BoxGeometry(0.1, 0.02, 0.02);
   GEO.sweat = new THREE.SphereGeometry(0.045, 5, 4);
@@ -659,18 +665,19 @@ function initGeos() {
   GEO.spark = new THREE.SphereGeometry(0.45, 8, 6);
   GEO.marker = new THREE.ConeGeometry(0.13, 0.28, 6);
   GEO.brim = new THREE.CylinderGeometry(0.48, 0.48, 0.055, 10);
-  GEO.cap = new THREE.CylinderGeometry(0.26, 0.30, 0.2, 8);
-  GEO.ear = new THREE.CylinderGeometry(0.07, 0.045, 0.46, 6);
+  GEO.cap = new THREE.CylinderGeometry(0.26, 0.30, 0.2, 12);
+  GEO.ear = new THREE.CylinderGeometry(0.07, 0.045, 0.46, 8);
   GEO.horn = new THREE.ConeGeometry(0.09, 0.34, 6);
-  GEO.flowerC = new THREE.SphereGeometry(0.1, 6, 4);
+  GEO.flowerC = new THREE.SphereGeometry(0.1, 8, 6);
   GEO.petal = new THREE.SphereGeometry(0.09, 5, 4);
   GEO.band = new THREE.CylinderGeometry(0.30, 0.32, 0.12, 8);
-  GEO.spike = new THREE.ConeGeometry(0.07, 0.2, 5);
+  GEO.spike = new THREE.ConeGeometry(0.07, 0.2, 8);
   GEO.topCrown = new THREE.CylinderGeometry(0.2, 0.22, 0.46, 8);
   GEO.hatband = new THREE.CylinderGeometry(0.23, 0.23, 0.08, 8);
   GEO.stem = new THREE.CylinderGeometry(0.035, 0.045, 0.16, 5);
   GEO.leaf = new THREE.ConeGeometry(0.09, 0.22, 5);
-  GEO.mcap = spottedCap();
+  GEO.mcap = spottedCap(8, 6);
+  GEO.hatCap = spottedCap(12, 8);
   GEO.post = stripeColorGeo(new THREE.CylinderGeometry(0.1, 0.12, 1.15, 6), 6, 0xff3355, 0xffffff);
   GEO.stalk = new THREE.CylinderGeometry(0.16, 0.2, 0.85, 6);
   GEO.pop = new THREE.SphereGeometry(0.42, 8, 6);
@@ -1981,7 +1988,7 @@ function addHat(head, type) {
       head.add(c);
     }
   } else if (type === 'mushroom') {
-    const cap = new THREE.Mesh(GEO.mcap, MAT.vc);
+    const cap = new THREE.Mesh(GEO.hatCap, MAT.vc);
     cap.position.y = 0.3;
     cap.scale.set(0.62, 0.55, 0.62);
     head.add(cap);
@@ -2018,7 +2025,7 @@ function addHair(head, type) {
   } else if (type === 'bow') addBow(head, 0.12, 0.65, 0.3);
   else if (type === 'buns') {
     [-1, 1].forEach((side) => {
-      const bun = new THREE.Mesh(GEO.scoop, toon(0xff8ec4));
+      const bun = new THREE.Mesh(GEO.bun, toon(0xff8ec4));
       bun.position.set(side * 0.32, 0.14, -0.06);
       bun.scale.setScalar(0.85);
       head.add(bun);
@@ -2227,6 +2234,8 @@ function resetRunner(r, s, x, air) {
   r.brain.knockLog = [];
   r.brain.missed = {};
   r.brain.hammerSide = {};
+  r.brain.snowTax = 0;
+  r.brain.padCap = 99;
   r.root.visible = true;
 }
 function placeMenu() {
@@ -2241,6 +2250,7 @@ function activeRunners() {
   return runners;
 }
 function poseOf(r) {
+  if (present) return 'show';
   if (screen === 'menu') return 'wave';
   if (screen === 'results' && mode === 'vs') return 'cheer';
   if (r.knockT > 0) return 'knock';
@@ -2293,6 +2303,19 @@ function applyPose(r, kind) {
     p.body.position.y = Math.abs(s) * 0.04;
     return;
   }
+  if (kind === 'show') {
+    const ph = presentT * 8 + r.id * 0.7;
+    const sw = Math.sin(ph) * 0.92;
+    p.legL.rotation.x = sw;
+    p.legR.rotation.x = -sw;
+    p.armL.rotation.x = -sw * 0.8;
+    p.armR.rotation.x = sw * 0.8;
+    p.armL.rotation.z = -0.32;
+    p.armR.rotation.z = 0.32;
+    p.body.position.y = Math.abs(Math.sin(ph)) * 0.09;
+    p.body.rotation.x = 0.05;
+    return;
+  }
   if (kind === 'tired') {
     p.body.rotation.x = 0.5;
     p.body.rotation.z = Math.sin(t * 7 + r.id) * 0.08;
@@ -2328,7 +2351,7 @@ function applyPose(r, kind) {
 function applyFace(r, kind) {
   const p = r.parts;
   if (!p.smile) return;
-  const excited = r.boostT > 0 || r.landDashT > 0 || (r.dashHeld && r.dashGauge > 0 && r.exhaustedT <= 0);
+  const excited = kind !== 'show' && (r.boostT > 0 || r.landDashT > 0 || (r.dashHeld && r.dashGauge > 0 && r.exhaustedT <= 0));
   const dizzy = kind === 'knock';
   p.smile.visible = !dizzy && !excited;
   p.mouthO.visible = !dizzy && excited;
@@ -2356,8 +2379,9 @@ function applySquash(r, kind) {
     else if (r.vy < -1) b.scale.set(1.08, 0.86, 1.08);
     return;
   }
-  if (kind === 'run' || kind === 'tired') {
-    const s = 1 + Math.sin(r.phase * 2) * (kind === 'tired' ? 0.03 : 0.07);
+  if (kind === 'run' || kind === 'tired' || kind === 'show') {
+    const ph = kind === 'show' ? presentT * 8 + r.id * 0.7 : r.phase;
+    const s = 1 + Math.sin(ph * 2) * (kind === 'tired' ? 0.03 : 0.07);
     const xz = 1 / Math.sqrt(Math.max(0.55, s));
     b.scale.set(xz, s, xz);
   }
@@ -2372,7 +2396,23 @@ function syncRunners(dt) {
   const podiumMode = screen === 'results' && mode === 'vs';
   for (let i = 0; i < list.length; i++) {
     const r = list[i];
-    if (soloHide && !r.isPlayer && closeupId !== r.id) { r.root.visible = false; continue; }
+    if (present) {
+      const show = present === 'lineup' || r.id === closeupId;
+      r.root.visible = show;
+      r.root.quaternion.identity();
+      if (present === 'lineup') r.root.position.set((r.id - 3.5) * 1.28, 0, 0);
+      else r.root.position.set(0, 0, 0);
+      applyPose(r, 'show');
+      applySquash(r, 'show');
+      applyFace(r, 'show');
+      if (r.marker) r.marker.visible = false;
+      const tagP = r.root.children.find((c) => c.isSprite);
+      if (tagP) tagP.visible = false;
+      r.ring.visible = false;
+      r.spark.visible = false;
+      continue;
+    }
+    if (soloHide && !r.isPlayer) { r.root.visible = false; continue; }
     if (!podiumMode) {
       const yaw = clamp(r.vx * 0.055, -0.4, 0.4);
       toWorld(r.s, r.x, r.y, r.root.position);
@@ -2485,7 +2525,7 @@ function onLand(r) {
   if (r.knockT > 0 || r.respawnT > 0 || r.finished) return;
   if (buffered && r.exhaustedT <= 0) { triggerLandDash(r); return; }
   const prof = profileOf(r);
-  if (prof && r.exhaustedT <= 0) {
+  if (prof && r.exhaustedT <= 0 && !(r.brain && r.brain.padCap < 1)) {
     if (rng() < (0.32 + prof.dashAggression * 0.5) * (1 - prof.mistakeRate)) triggerLandDash(r);
   }
 }
@@ -2515,6 +2555,12 @@ function knock(r, push, why) {
   r.vs = 0;
   r.vx = (push || 0) * 4.5;
   r.landDashT = 0;
+  if (why === 'wall' && mapDef.id === 'snow') {
+    r.vy = 0;
+    r.y = 0;
+    r.grounded = true;
+    r.jumpsUsed = 0;
+  }
   if (r.brain) {
     r.brain.jumped.clear();
     r.brain.honest = (r.brain.honest || 0) + 1;
@@ -2619,6 +2665,7 @@ function applyForkWarp(r) {
     r.carryOff = 0;
     r.carryOffX = 0;
     r.carryOffS = 0;
+    if (mapDef.id === 'snow' && r.brain) r.brain.snowTax = 3.2;
   }
 }
 function stepRunner(r, dt) {
@@ -2684,14 +2731,39 @@ function stepRunner(r, dt) {
   else if (r.boostT > 0) target = 14;
   else if (r.landDashT > 0) target = 12.5;
   else if (dashing) target = 11.5;
+  if (mapDef.id === 'snow' && !r.isPlayer && r.brain && r.brain.snowTax > 0 && target > 0 && r.boostT <= 0) {
+    if (inGap(r.s) || r.s > 756) r.brain.snowTax = 0;
+    else {
+      r.brain.snowTax -= dt;
+      if (target > 7.0) target = 7.0;
+    }
+  }
   // Mild catch-up for AI well behind the leader. Never applied to the player.
   // Keep the pack inside the 10s finish window. Never applied to the player.
   if (racing && target > 0 && !r.isPlayer && packLeadS - r.s > 15) {
-    const u = clamp((packLeadS - r.s - 15) / 70, 0, 1);
+    const gap = packLeadS - r.s;
+    const u = clamp((gap - 15) / 70, 0, 1);
     let mul = 1.1 + 0.05 * u;
     const hazardRoad = inGap(r.s) || !!narrowAt(r.s) || !!forkAt(r.s) || !!tileZoneAt(r.s);
-    if (!hazardRoad && packLeadS - r.s > 40) mul += mapDef.id === 'snow' ? 0.1 : 0.04;
-    target *= mul;
+    if (mapDef.id === 'snow' && r.boostT <= 0) {
+      // Floor stays under a dashing autopilot (11.5). A spring launch stays at
+      // 14; capping it to ~11 drops AI into the finale wall. Short-cut tax
+      // stops that runner finishing ahead. The moving gap keeps the slower cap.
+      if (r.brain && r.brain.snowTax > 0) {
+        target = Math.min(target, 7.0);
+      } else if (!inGap(r.s) && gap > 32) {
+        const floor = gap > 70 ? 10.35 : 9.85;
+        target = Math.min(10.4, Math.max(target * mul, floor));
+      } else {
+        target = Math.min(target * mul, inGap(r.s) ? 9.5 : 9.95);
+      }
+    } else if (mapDef.id !== 'snow') {
+      if (!hazardRoad && gap > 40) mul += 0.04;
+      target *= mul;
+    }
+  }
+  if (mapDef.id === 'snow' && !r.isPlayer && r.brain && r.grounded && r.boostT <= 0 && r.brain.padCap != null && r.brain.padCap < 50 && target > r.brain.padCap) {
+    target = r.brain.padCap;
   }
   r.vs += clamp(target - r.vs, -12 * dt, 12 * dt);
   if (r.vs < 0) r.vs = 0;
@@ -2744,6 +2816,10 @@ function stepRunner(r, dt) {
   if (r.grounded && r.knockT <= 0 && r.vs > 0.3) r.phase += dt * (7 + r.vs * 1.15);
 
   applyForkWarp(r);
+  if (mapDef.id === 'snow' && !r.isPlayer && r.brain && r.brain.padCap < 1 && r.grounded && r.boostT <= 0 && r.knockT <= 0) {
+    r.landDashT = 0;
+    if (r.vs > 0.15) r.vs = 0.15;
+  }
   if (r.y < -6) doRespawn(r);
   if (racing && !r.finished && r.s >= trackLength) {
     r.finished = true;
@@ -3038,9 +3114,56 @@ function thinkMovingGap(r, g0, g1, setT, prof) {
   if (lateHop) r.brain.jumped.add(hopKey);
   setT(6, aim, jump);
 }
+// Snow finale: a full-width wall sits 6 m after a center spring. Only a center
+// ball overlaps the pad; side balls miss x=0. Line up, let lateral speed die,
+// then drive. Releasing early carries vx across the pad and into the wall.
+function snowPadSteer(r) {
+  if (mapDef.id !== 'snow' || r.isPlayer || !r.brain) return null;
+  let sp = null;
+  let best = 1e9;
+  for (let i = 0; i < springs.length; i++) {
+    const d = springs[i].s - r.s;
+    if (d > -0.3 && d < 22 && d < best) { best = d; sp = springs[i]; }
+  }
+  if (!sp) return null;
+  const ds = sp.s - r.s;
+  let block = null;
+  const approach = Math.max(4.5, r.vs);
+  for (let i = 0; i < balls.length; i++) {
+    const b = balls[i];
+    if (!b.alive) continue;
+    if (Math.abs(b.x - sp.x) > 1.35) continue;
+    if (b.s < r.s - 1.5) continue;
+    const tBall = (b.s - (sp.s - 1.2)) / 9;
+    const tMe = Math.max(0, ds) / approach;
+    if (b.s <= sp.s + 2.8 || (tBall >= 0 && tBall < tMe + 0.45)) {
+      block = b;
+      break;
+    }
+  }
+  if (block) {
+    function busy(x) {
+      for (let i = 0; i < balls.length; i++) {
+        const b = balls[i];
+        if (!b.alive) continue;
+        if (b.s < r.s - 1.5 || b.s > sp.s + 4) continue;
+        if (Math.abs(b.x - x) < 1.5) return true;
+      }
+      return false;
+    }
+    let side = block.x >= 0 ? -2.55 : 2.55;
+    if (busy(side)) side = -side;
+    return { x: side, cap: ds < 5.5 ? 0 : 8.5 };
+  }
+  const lined = Math.abs(r.x - sp.x) < 0.9 && Math.abs(r.vx) < 2.2;
+  if (!lined && ds < 5) return { x: sp.x, cap: 0 };
+  if (!lined) return { x: sp.x, cap: 9 };
+  return { x: sp.x, cap: 99 };
+}
 function aiMistakeRate(r) {
   let m = r.profile ? r.profile.mistakeRate : 0;
   if (r.brain && r.brain.carefulSec === sectionAt(r.s)) m *= 0.5;
+  if (mapDef.id === 'snow') m *= 0.35;
   return m;
 }
 function thinkAI(r, dt) {
@@ -3258,20 +3381,35 @@ function thinkAI(r, dt) {
     }
     if (nar && !hurdleBefore) setT(9, nar.x || 0, false);
   }
-  // hammers — latch a side so the swing doesn't make them weave into the head
+  // hammers — latch a side so the swing doesn't make them weave into the head.
+  // Snow refreshes until the last 11 m, then locks, and outranks a ball lane.
   for (let i = 0; i < hammers.length; i++) {
     const h = hammers[i];
     const ds = h.s - r.s;
     if (ds <= 0 || ds > 16) continue;
     if (!r.brain.hammerSide) r.brain.hammerSide = {};
     const key = h.s;
-    if (r.brain.hammerSide[key] == null && ds < 13) {
-      const tArr = ds / Math.max(5, r.vs);
-      const A = Math.sin((worldT + tArr) * h.omega + h.phase) * h.amp;
-      const hx = -Math.sin(A) * h.len;
-      r.brain.hammerSide[key] = hx >= 0 ? -2.45 : 2.45;
+    const snowHam = mapDef.id === 'snow' && !r.isPlayer;
+    if (snowHam) {
+      if (r.brain.hammerSide[key] == null || ds > 11) {
+        const tArr = ds / Math.max(6, r.vs);
+        const A = Math.sin((worldT + tArr) * h.omega + h.phase) * h.amp;
+        const hx = -Math.sin(A) * h.len;
+        const headY = h.pivotY - Math.cos(A) * h.len;
+        let side = hx >= 0 ? -2.6 : 2.6;
+        if (headY >= 1.95) side = r.x >= 0 ? 2.15 : -2.15;
+        r.brain.hammerSide[key] = side;
+      }
+      if (r.brain.hammerSide[key] != null) setT(9, r.brain.hammerSide[key], false);
+    } else {
+      if (r.brain.hammerSide[key] == null && ds < 13) {
+        const tArr = ds / Math.max(5, r.vs);
+        const A = Math.sin((worldT + tArr) * h.omega + h.phase) * h.amp;
+        const hx = -Math.sin(A) * h.len;
+        r.brain.hammerSide[key] = hx >= 0 ? -2.45 : 2.45;
+      }
+      if (r.brain.hammerSide[key] != null) setT(8, r.brain.hammerSide[key], false);
     }
-    if (r.brain.hammerSide[key] != null) setT(8, r.brain.hammerSide[key], false);
   }
   // springs
   for (let i = 0; i < springs.length; i++) {
@@ -3311,11 +3449,30 @@ function thinkAI(r, dt) {
       }
       const late = hash01(r.id + 11 + (r.brain.knocks || 0), Math.floor(threatS)) < aiMistakeRate(r) * 0.85;
       const ballFirst = soonest < springDs - 0.4;
-      if (!late) setT(ballFirst && soonest < 14 ? 10 : 7, best, false);
+      let hammerCloser = false;
+      if (mapDef.id === 'snow' && !r.isPlayer) {
+        for (let hi = 0; hi < hammers.length; hi++) {
+          const ds = hammers[hi].s - r.s;
+          if (ds > 0.2 && ds < 16) hammerCloser = true;
+        }
+      }
+      if (!late) setT(ballFirst && soonest < 14 && !hammerCloser ? 10 : 7, best, false);
     }
   }
   if (r.grounded && r.carrier && r.carrier.kind === 'vanish' && r.carrier.flash) {
     targetX = r.x >= 0 ? -2.15 : 2.15;
+  }
+  if (r.brain) r.brain.padCap = 99;
+  const pad = snowPadSteer(r);
+  if (pad) {
+    setT(12, pad.x, false);
+    r.brain.padCap = pad.cap;
+  }
+  if (mapDef.id === 'snow' && !r.isPlayer && wantJump) {
+    for (let i = 0; i < springs.length; i++) {
+      const ds = springs[i].s - r.s;
+      if (ds > -3 && ds < 18) { wantJump = false; break; }
+    }
   }
   r.steer = clamp((targetX - r.x) / 1.3, -1, 1);
   if (wantJump) r.jumpEdge = true;
@@ -3357,6 +3514,132 @@ function thinkAI(r, dt) {
       r.brain.dashCd = 1.3 + rng() * 0.8;
     }
   }
+  if (r.brain.padCap != null && r.brain.padCap < 1) {
+    r.dashHeld = false;
+    r.brain.dashT = 0;
+  }
+}
+
+/* =====================================================================
+   PRESENT (closeup / lineup)
+   Character face is local +Z. Studio camera sits on world +Z looking toward -Z
+   so identity rotation faces the lens. Feet rest near y=0, tallest ears ~y=1.97.
+   ===================================================================== */
+const PRESENT_IDS = ['menu', 'hud', 'pause', 'results', 'touch', 'banner', 'c10', 'vignette', 'joy', 'rotate'];
+function hidePresentOverlays() {
+  for (let i = 0; i < PRESENT_IDS.length; i++) {
+    const el = $(PRESENT_IDS[i]);
+    if (el) el.hidden = true;
+  }
+  const box = $('toasts');
+  if (box) box.textContent = '';
+}
+function ensureStage() {
+  if (stageMesh || !scene) return;
+  const geo = new THREE.CircleGeometry(90, 64);
+  geo.rotateX(-Math.PI / 2);
+  stageMesh = new THREE.Mesh(geo, toon(0xfff7ee));
+  stageMesh.position.y = -0.08;
+  stageMesh.visible = false;
+  scene.add(stageMesh);
+}
+function applyPresentWorld() {
+  if (worldRoot) worldRoot.visible = false;
+  if (podium) podium.visible = false;
+  if (confetti) confetti.visible = false;
+  if (sunMesh) sunMesh.visible = false;
+  if (stageMesh) stageMesh.visible = true;
+  if (scene && scene.fog) {
+    scene.fog.near = 240;
+    scene.fog.far = 520;
+  }
+}
+function beginPresent(kind, id) {
+  present = kind;
+  closeupId = kind === 'closeup' ? id : null;
+  camSnap = true;
+  ensureStage();
+  applyPresentWorld();
+  hidePresentOverlays();
+}
+function endPresent() {
+  present = null;
+  closeupId = null;
+  camSnap = true;
+  if (stageMesh) stageMesh.visible = false;
+  if (sunMesh) sunMesh.visible = true;
+  if (scene && scene.fog && mapDef && mapDef.theme) {
+    scene.fog.near = mapDef.theme.fogNear;
+    scene.fog.far = mapDef.theme.fogFar;
+  }
+  if (screen === 'results' && mode === 'vs') {
+    if (worldRoot) worldRoot.visible = false;
+    if (podium) podium.visible = true;
+    if (confetti) confetti.visible = true;
+    layoutPodium();
+  } else {
+    if (worldRoot) worldRoot.visible = true;
+    if (podium) podium.visible = false;
+    if (confetti) confetti.visible = false;
+  }
+  const menuEl = $('menu');
+  if (menuEl) menuEl.hidden = screen !== 'menu';
+  const pauseEl = $('pause');
+  if (pauseEl) pauseEl.hidden = screen !== 'paused';
+  const resultsEl = $('results');
+  if (resultsEl) resultsEl.hidden = screen !== 'results';
+  const vv = window.visualViewport;
+  const rw = vv ? vv.width : window.innerWidth;
+  const rh = vv ? vv.height : window.innerHeight;
+  const rot = $('rotate');
+  if (rot) rot.hidden = rotateDismissed || !(rh > rw + 20);
+  updateHUD();
+}
+function fillPresentBox() {
+  presentBox.makeEmpty();
+  const walk = (obj) => {
+    if (!obj.visible || obj.isSprite) return;
+    if (obj.geometry) {
+      if (!obj.geometry.boundingBox) obj.geometry.computeBoundingBox();
+      presentTmp.copy(obj.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
+      presentBox.union(presentTmp);
+    }
+    for (let i = 0; i < obj.children.length; i++) walk(obj.children[i]);
+  };
+  for (let i = 0; i < runners.length; i++) {
+    const r = runners[i];
+    if (!r.root.visible) continue;
+    r.root.updateWorldMatrix(true, true);
+    walk(r.root);
+  }
+}
+function layoutPresentCamera() {
+  const fov = 28;
+  camera.fov = fov;
+  fillPresentBox();
+  const aspect = Math.max(0.2, camera.aspect || 1);
+  const vHalf = THREE.MathUtils.degToRad(fov) * 0.5;
+  const hHalf = Math.atan(Math.tan(vHalf) * aspect);
+  let H = 2.0;
+  let Wd = 1.2;
+  let midX = 0;
+  let midY = 0.95;
+  if (!presentBox.isEmpty()) {
+    H = Math.max(0.6, presentBox.max.y - presentBox.min.y);
+    Wd = Math.max(0.6, presentBox.max.x - presentBox.min.x);
+    midX = (presentBox.min.x + presentBox.max.x) * 0.5;
+    midY = (presentBox.min.y + presentBox.max.y) * 0.5;
+  }
+  const fillH = present === 'lineup' ? 0.46 : 0.665;
+  const fillW = present === 'lineup' ? 0.88 : 0.86;
+  let dist = (H / fillH) / (2 * Math.tan(vHalf));
+  const distW = (Wd / fillW) / (2 * Math.tan(Math.max(1e-4, hHalf)));
+  if (distW > dist) dist = distW;
+  const camLift = H * 0.045;
+  camera.up.set(0, 1, 0);
+  camera.position.set(midX, midY + camLift, dist);
+  camera.lookAt(midX, midY - H * 0.015, 0);
+  camera.updateProjectionMatrix();
 }
 
 /* =====================================================================
@@ -3364,24 +3647,8 @@ function thinkAI(r, dt) {
    ===================================================================== */
 function updateCamera(dt) {
   if (!camera) return;
-  if (closeupId != null && runners[closeupId]) {
-    const r = runners[closeupId];
-    const portraitCU = (camera.aspect || 1) < 1;
-    if (screen === 'results' && mode === 'vs') {
-      const yaw = r.root.rotation.y;
-      vC.copy(r.root.position);
-      vA.set(vC.x + Math.sin(yaw) * 2.35, vC.y + 1.22, vC.z + Math.cos(yaw) * 2.35);
-      vD.set(vC.x, vC.y + 1.15, vC.z);
-    } else {
-      toWorld(r.s, r.x, r.y + 1.15, vC);
-      const o = sampleInto(r.s, S1);
-      vA.set(vC.x + o.tx * 2.45 + o.rx * 0.12, vC.y + 0.18, vC.z + o.tz * 2.45 + o.rz * 0.12);
-      vD.set(vC.x, vC.y, vC.z);
-    }
-    camera.position.copy(vA);
-    camera.lookAt(vD);
-    camera.fov = portraitCU ? 34 : 30;
-    camera.updateProjectionMatrix();
+  if (present) {
+    layoutPresentCamera();
     camSnap = false;
     return;
   }
@@ -3629,6 +3896,10 @@ function saveBest(t) {
   try { localStorage.setItem(bestKey(), String(t)); } catch (e) { /* ignore */ }
 }
 function updateHUD() {
+  if (present) {
+    hidePresentOverlays();
+    return;
+  }
   const racingUI = screen === 'race' || screen === 'countdown' || screen === 'paused';
   $('hud').hidden = !racingUI;
   $('touch').hidden = !(screen === 'race' || screen === 'countdown');
@@ -3839,7 +4110,8 @@ function resize() {
   renderer.setSize(w, h, false);
   camera.aspect = w / Math.max(1, h);
   camera.updateProjectionMatrix();
-  $('rotate').hidden = rotateDismissed || !(h > w + 20);
+  if (present) $('rotate').hidden = true;
+  else $('rotate').hidden = rotateDismissed || !(h > w + 20);
 }
 
 /* =====================================================================
@@ -4242,6 +4514,7 @@ function frame(now) {
   const realDt = Math.min(0.1, Math.max(0, (now - lastNow) / 1000));
   lastNow = now;
   if (realDt > 0) fps += (1 / realDt - fps) * 0.08;
+  if (present) presentT += realDt;
   let simmed = 0;
   if (screen === 'menu') {
     menuT += realDt;
@@ -4278,7 +4551,8 @@ function frame(now) {
     syncTiles();
   }
   syncRunners(visDt);
-  if (screen !== 'results' || mode !== 'vs') syncShadows();
+  if (present) applyPresentWorld();
+  if (!present && (screen !== 'results' || mode !== 'vs')) syncShadows();
   updateCamera(screen === 'paused' ? 0 : visDt);
   updateHUD();
   renderer.render(scene, camera);
@@ -4493,6 +4767,7 @@ function installTestHook() {
       return {
         screen,
         mode,
+        present: present || null,
         map: mapDef.id,
         mapName: mapDef.name,
         checkpoints: checkpoints.slice(),
@@ -4530,10 +4805,77 @@ function installTestHook() {
       startRace(m === 'solo' ? 'solo' : 'vs');
     },
     closeup: (i) => {
-      if (i == null) { closeupId = null; camSnap = true; return; }
+      if (i == null) { endPresent(); return; }
       const n = i | 0;
-      closeupId = (n >= 0 && n < runners.length) ? n : null;
-      camSnap = true;
+      if (n >= 0 && n < runners.length) beginPresent('closeup', n);
+    },
+    lineup: (on) => {
+      if (on === false) { endPresent(); return; }
+      beginPresent('lineup', null);
+    },
+    presentFrame: () => {
+      if (!camera) return null;
+      camera.updateMatrixWorld();
+      const box = new THREE.Box3();
+      const tmp = new THREE.Box3();
+      let n = 0;
+      let minX = 1, maxX = -1, minY = 1, maxY = -1;
+      const ids = [];
+      for (let i = 0; i < runners.length; i++) {
+        const r = runners[i];
+        if (!r.root.visible) continue;
+        r.root.updateWorldMatrix(true, true);
+        const one = new THREE.Box3();
+        const walkOne = (obj) => {
+          if (!obj.visible) return;
+          if (obj.geometry) {
+            if (!obj.geometry.boundingBox) obj.geometry.computeBoundingBox();
+            tmp.copy(obj.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
+            one.union(tmp);
+          }
+          for (let c = 0; c < obj.children.length; c++) walkOne(obj.children[c]);
+        };
+        walkOne(r.root);
+        if (one.isEmpty()) continue;
+        box.union(one);
+        n++;
+        ids.push(r.id);
+      }
+      const corners = [
+        [box.min.x, box.min.y, box.min.z], [box.min.x, box.min.y, box.max.z],
+        [box.min.x, box.max.y, box.min.z], [box.min.x, box.max.y, box.max.z],
+        [box.max.x, box.min.y, box.min.z], [box.max.x, box.min.y, box.max.z],
+        [box.max.x, box.max.y, box.min.z], [box.max.x, box.max.y, box.max.z],
+      ];
+      if (!box.isEmpty()) {
+        for (let i = 0; i < corners.length; i++) {
+          vD.set(corners[i][0], corners[i][1], corners[i][2]).project(camera);
+          if (vD.x < minX) minX = vD.x;
+          if (vD.x > maxX) maxX = vD.x;
+          if (vD.y < minY) minY = vD.y;
+          if (vD.y > maxY) maxY = vD.y;
+        }
+      }
+      const overlays = {};
+      for (let i = 0; i < PRESENT_IDS.length; i++) {
+        const el = $(PRESENT_IDS[i]);
+        overlays[PRESENT_IDS[i]] = !el || !!el.hidden;
+      }
+      return {
+        present: present || null,
+        closeup: closeupId,
+        n,
+        ids,
+        world: worldRoot ? worldRoot.visible : null,
+        box: box.isEmpty() ? null : {
+          minX: box.min.x, maxX: box.max.x, minY: box.min.y, maxY: box.max.y,
+        },
+        ndc: { minX, maxX, minY, maxY, h: (maxY - minY) / 2, w: (maxX - minX) / 2 },
+        overlays,
+        fov: camera.fov,
+        aspect: camera.aspect,
+        tri: lastTri,
+      };
     },
     autopilot: (on) => {
       autopilot = !!on;

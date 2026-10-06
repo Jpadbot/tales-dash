@@ -1,5 +1,13 @@
 # 開發紀錄 / Provenance
 
+## v3（多地圖＋更可愛角色，2026-10-06～07 HKT，分支 `feat/v3-maps-cute`）
+- Grok CLI：`grok update` → 已是最新 **grok 1.0.49 (8e66fdf1fd8e) [alpha]**；`grok models` 預設 **grok-4.7**（TUI 顯示 Grok 4.7 (high)）。
+- 使用模式：**互動 TUI，於 box 桌面（DISPLAY :7）可見之 xfce4-terminal 內執行**：`grok --cwd /workspace/tales-dash --always-approve -m grok-4.7 "<prompt>"`（新 session）。
+  1. 主要實作：`GROK_TASK_V3.md`（約 75 分鐘）→ 地圖資料化、糖果樂園／雪花山谷、新障礙、AI、新角色、測試介面。
+  2. 修正 1（同一 TUI session 追加 prompt）：`GROK_FIX_V3_1.md`（約 57 分鐘）→ closeup 取景＋lineup、角色更圓潤、雪花山谷 AI 完成率。
+- 代理（非 Grok）直接撰寫／修改：`GROK_TASK_V3.md`、`GROK_FIX_V3_1.md`、`TICKET.md`、`NOTES.md`、`.gitignore`（加 `notes/`）；小修：移除 MeshToonMaterial 不支援的 `flatShading`（消除 console 警告）、橫向選單箭咀 40px／模式按鈕 42px、直向「轉橫」提示 min-height 40px（觸控目標）。
+- 驗證腳本（repo 外，/workspace/scratch）：`tales-v3-test.mjs`（每張地圖 × solo/vs，autopilot，記錄三角形）、`tales-v3-shots.mjs`（選單、選圖、角色特寫、lineup）；puppeteer-core + Chrome 無頭（SwiftShader WebGL）。
+
 ## v2（3D 背後視角，2026-09-30 HKT）
 - Grok CLI：`grok update` → 已是最新 **grok 1.0.45 (c33bff361a6f) [alpha]**；`grok models` 預設 **grok-4.7**（另有 grok-4.7-build-fast、grok-4.6、grok-4.5）。
 - 使用模式：**plain（非互動）**，`grok --prompt-file <file> --output-format plain -m grok-4.7 --always-approve`（此環境無可見桌面終端，未用 TUI）。
