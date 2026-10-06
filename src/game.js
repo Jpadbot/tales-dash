@@ -4,18 +4,15 @@ import * as THREE from 'three';
    CONFIG
    ===================================================================== */
 const W = 7;
-const TARGET_LEN = 600;
 const LUT_STEP = 0.5;
-const ROAD_STEP = 1;
 const GRAV = -28;
-const GAP0 = 266;
-const GAP1 = 376;
-const CP_S = [0, 120, 260, 380];
 const GROUND_Y = -22;
 const BALL_MAX = 6;
 const FIXED = 1 / 60;
+const HURDLE_X = [-2.625, -0.875, 0.875, 2.625];
+const LEVEL_NAME = ['', '簡單', '普通', '困難'];
 
-const RAW = [
+const FOREST_RAW = [
   [0, 0.15, 0],
   [4, 0.45, 48],
   [16, 1.05, 96],
@@ -31,18 +28,136 @@ const RAW = [
   [6, 0.7, 628],
 ];
 
-const ROSTER = [
-  { name: '小赤', hex: '#e23b3b', color: 0xe23b3b, hat: 'cap', player: true, speedMul: 1 },
-  { name: '小兔寶', hex: '#ff7eb6', color: 0xff7eb6, hat: 'bunny', speedMul: 0.934, reaction: 0.11, mistakeRate: 0.055, dashAggression: 0.32, preferredLane: -1.55 },
-  { name: '南瓜仔', hex: '#ff8c32', color: 0xff8c32, hat: 'horn', speedMul: 0.888, reaction: 0.18, mistakeRate: 0.10, dashAggression: 0.16, preferredLane: 1.75 },
-  { name: '糖糖', hex: '#ff5aa8', color: 0xff5aa8, hat: 'flower', speedMul: 0.992, reaction: 0.09, mistakeRate: 0.04, dashAggression: 0.46, preferredLane: 0.25 },
-  { name: '星星妹', hex: '#ffd23a', color: 0xffd23a, hat: 'crown', speedMul: 0.948, reaction: 0.13, mistakeRate: 0.07, dashAggression: 0.30, preferredLane: -0.35 },
-  { name: '蘑菇叔', hex: '#d84a4a', color: 0xd84a4a, hat: 'mushroom', speedMul: 0.905, reaction: 0.24, mistakeRate: 0.13, dashAggression: 0.15, preferredLane: 2.15 },
-  { name: '雪球', hex: '#8fd0f5', color: 0x8fd0f5, hat: 'tophat', speedMul: 0.872, reaction: 0.20, mistakeRate: 0.11, dashAggression: 0.14, preferredLane: -2.15 },
-  { name: '豆豆', hex: '#6ad85a', color: 0x6ad85a, hat: 'sprout', speedMul: 0.912, reaction: 0.15, mistakeRate: 0.08, dashAggression: 0.22, preferredLane: 0.95 },
+const MAPS = [
+  {
+    id: 'forest',
+    name: '童話森林',
+    difficulty: 1,
+    ui: '#ff4d8d',
+    raw: FOREST_RAW,
+    targetLen: 600,
+    blockStyle: 'forest',
+    cps: [0, 120, 260, 380],
+    gaps: [{ s0: 266, s1: 376 }],
+    danger: { s: 321, x: 6.3 },
+    hurdles: [
+      { s: 136 }, { s: 150 }, { s: 164, gaps: [1] }, { s: 178 }, { s: 192 },
+      { s: 206, gaps: [3] }, { s: 220 }, { s: 234, gaps: [0] }, { s: 248 },
+    ],
+    pads: [[30, -1.15], [58, 1.25], [86, 0], [112, -1.2]],
+    hammers: [
+      { s: 494, phase: 0.2, omega: 1.25, amp: 1.02 },
+      { s: 524, phase: 2.1, omega: 1.45, amp: 1.0 },
+      { s: 552, phase: 4.0, omega: 1.15, amp: 1.05 },
+    ],
+    balls: { from: 384, kill: 372, introA: 396, introB: 412, introX: -2.15 },
+    finale: [-40, -20],
+    theme: {
+      decor: 'forest', road: 'forest',
+      clear: 0x9ad8ff, bg: 0x9ad8ff, fog: 0xd7f3ff, fogNear: 90, fogFar: 260,
+      ground: 0x69c85c, hemiSky: 0xfff4ea, hemiGround: 0x6fbf62, sun: 0xfff4b8,
+      skyTop: 0x2f7dff, skyMid: 0x9ad8ff, skyHor: 0xffd0e8, skyBot: 0xc9e8ff,
+      postA: 0xff3355, postB: 0xffffff,
+    },
+  },
+  {
+    id: 'candy',
+    name: '糖果樂園',
+    difficulty: 2,
+    ui: '#ff5c9a',
+    raw: [
+      [0, 0.3, 0], [12, 1.8, 55], [26, 4.6, 115], [16, 6.6, 175],
+      [-6, 3.6, 240], [-28, 1.5, 305], [-12, 3.2, 370], [10, 5.8, 440],
+      [30, 3.4, 510], [14, 1.5, 580], [-8, 2.8, 650], [4, 0.6, 720], [8, 0.25, 790],
+    ],
+    targetLen: 780,
+    blockStyle: 'move',
+    cps: [0, 155, 350, 500, 608],
+    gaps: [{ s0: 628, s1: 724 }],
+    narrows: [{ s0: 252, s1: 332, x: 0, half: 1.02, intro: 14, outro: 10 }],
+    forks: [{
+      s0: 368, sShortExit: 452, sMerge: 498,
+      shortX: -3.2, shortHalf: 1.02, longX: 2.4, longHalf: 1.85,
+      diverge: 18, converge: 14, rotorS: 418, tileS: [432, 444],
+    }],
+    tileZones: [{ s0: 516, s1: 588, colors: [0xff8ec4, 0xffe14a, 0x7dface] }],
+    danger: { s: 292, x: 3.55 },
+    hurdles: [
+      { s: 176 }, { s: 196, gaps: [1] }, { s: 216 }, { s: 236, gaps: [3] },
+    ],
+    pads: [[36, -1.05], [74, 1.15], [112, 0], [140, -0.7]],
+    rotors: [{ s: 742, x: 0, halfLen: 3.15, omega: 1.02, phase: 0.6, pivotY: 1.08, color: 0xfff6ea, cap: 0xff4d8d }],
+    hammers: [],
+    balls: null,
+    finale: [-30, -14],
+    theme: {
+      decor: 'candy', road: 'candy', narrow: 'cookie',
+      clear: 0xffc4df, bg: 0xffc4df, fog: 0xffd6ea, fogNear: 70, fogFar: 230,
+      ground: 0x9be7c4, hemiSky: 0xfff0f6, hemiGround: 0x7dcea8, sun: 0xfff6c0,
+      skyTop: 0xff8ec8, skyMid: 0xffd0ea, skyHor: 0xfff3c4, skyBot: 0xffe4f2,
+      postA: 0xff4d8d, postB: 0xffffff,
+    },
+  },
+  {
+    id: 'snow',
+    name: '雪花山谷',
+    difficulty: 3,
+    ui: '#7eb6ff',
+    raw: [
+      [0, 0.4, 0], [-10, 3.2, 70], [-24, 7.6, 145], [-4, 9.6, 220],
+      [22, 5.4, 300], [36, 2.0, 380], [8, 0.8, 460], [-18, 4.2, 545],
+      [-32, 8.2, 630], [-6, 4.4, 715], [20, 1.6, 800], [30, 4.2, 885],
+      [8, 1.4, 960], [-4, 0.35, 1040],
+    ],
+    targetLen: 1020,
+    blockStyle: 'move',
+    cps: [0, 140, 230, 350, 462, 572, 745],
+    gaps: [{ s0: 760, s1: 875 }],
+    narrows: [{ s0: 248, s1: 338, x: 0, half: 0.98, intro: 12, outro: 10 }],
+    forks: [{
+      s0: 590, sShortExit: 700, sMerge: 740,
+      shortX: -3.3, shortHalf: 1.0, longX: 2.5, longHalf: 1.8,
+      diverge: 18, converge: 16, rotorS: 662, tileS: [676, 689],
+    }],
+    tileZones: [{ s0: 478, s1: 560, colors: [0xe7f4ff, 0xffffff, 0xb7dcff] }],
+    danger: { s: 292, x: 3.6 },
+    hurdles: [
+      { s: 156 }, { s: 172, gaps: [2] }, { s: 188 }, { s: 204, gaps: [0] }, { s: 220 },
+    ],
+    pads: [[42, 0], [86, 1.2], [124, -0.9]],
+    rotors: [
+      { s: 372, x: 0, halfLen: 3.2, omega: 1.12, phase: 0.4, pivotY: 1.08, color: 0xf4fbff, cap: 0x8fd0ff },
+      { s: 408, x: 0, halfLen: 3.2, omega: 1.12, phase: 1.8, pivotY: 1.08, color: 0xf4fbff, cap: 0xb9e4ff },
+      { s: 444, x: 0, halfLen: 3.2, omega: 1.05, phase: 2.7, pivotY: 1.08, color: 0xf4fbff, cap: 0x7ec8ff },
+    ],
+    hammers: [
+      { s: 905, phase: 0.3, omega: 1.3, amp: 1.04 },
+      { s: 942, phase: 2.0, omega: 1.18, amp: 1.02 },
+    ],
+    balls: { from: 900, kill: 878, introA: 912, introB: 930, introX: -2.15 },
+    finale: [-40, -18],
+    theme: {
+      decor: 'snow', road: 'snow', narrow: 'ice',
+      clear: 0xd5e9ff, bg: 0xd5e9ff, fog: 0xe7f2ff, fogNear: 48, fogFar: 200,
+      ground: 0xe7eef6, hemiSky: 0xf7fbff, hemiGround: 0xb7c9d8, sun: 0xffffff,
+      skyTop: 0x8ec6ff, skyMid: 0xd7ecff, skyHor: 0xf4f8ff, skyBot: 0xd5e4f2,
+      postA: 0xffffff, postB: 0x9fd0ff,
+    },
+  },
 ];
 
-const STRONG = { speedMul: 1.05, reaction: 0.05, mistakeRate: 0, dashAggression: 0.92, preferredLane: 0.1 };
+const ROSTER = [
+  { name: '小赤', hex: '#e23b3b', color: 0xe23b3b, hat: 'bunny', hair: 'fringe', player: true, speedMul: 1 },
+  { name: '小兔寶', hex: '#ff7eb6', color: 0xff7eb6, hat: 'floppy', hair: 'bow', speedMul: 0.934, reaction: 0.11, mistakeRate: 0.055, dashAggression: 0.32, preferredLane: -1.55, fork: 'long' },
+  { name: '南瓜仔', hex: '#ff8c32', color: 0xff8c32, hat: 'bear', speedMul: 0.888, reaction: 0.18, mistakeRate: 0.10, dashAggression: 0.16, preferredLane: 1.75, fork: 'long' },
+  { name: '糖糖', hex: '#ff5aa8', color: 0xff5aa8, hat: 'bow', hair: 'buns', speedMul: 0.992, reaction: 0.09, mistakeRate: 0.04, dashAggression: 0.46, preferredLane: 0.25, fork: 'short' },
+  { name: '星星妹', hex: '#ffd23a', color: 0xffd23a, hat: 'chick', speedMul: 0.948, reaction: 0.13, mistakeRate: 0.07, dashAggression: 0.30, preferredLane: -0.35, fork: 'long' },
+  { name: '蘑菇叔', hex: '#d84a4a', color: 0xd84a4a, hat: 'mushroom', speedMul: 0.905, reaction: 0.24, mistakeRate: 0.13, dashAggression: 0.15, preferredLane: 2.15, fork: 'long' },
+  { name: '雪球', hex: '#8fd0f5', color: 0x8fd0f5, hat: 'beanie', speedMul: 0.872, reaction: 0.20, mistakeRate: 0.11, dashAggression: 0.14, preferredLane: -2.15, fork: 'long' },
+  { name: '豆豆', hex: '#6ad85a', color: 0x6ad85a, hat: 'cat', hair: 'sprout', speedMul: 0.912, reaction: 0.15, mistakeRate: 0.08, dashAggression: 0.22, preferredLane: 0.95, fork: 'long' },
+];
+
+const STRONG = { speedMul: 1.05, reaction: 0.05, mistakeRate: 0, dashAggression: 0.92, preferredLane: 0.1, fork: 'long' };
 
 const GRID = [
   { s: 6.5, x: -0.7 },
@@ -100,12 +215,88 @@ function rankLabel(n) {
   return n + 'th';
 }
 function sectionAt(s) {
-  if (s < 120) return 1;
-  if (s < 260) return 2;
-  if (s < 380) return 3;
-  return 4;
+  const cps = checkpoints;
+  let sec = 1;
+  for (let i = 1; i < cps.length; i++) if (s >= cps[i]) sec = i + 1;
+  return sec;
 }
-function inGap(s) { return s > GAP0 && s < GAP1; }
+function gapAt(s) {
+  for (let i = 0; i < gaps.length; i++) {
+    const g = gaps[i];
+    if (s > g.s0 && s < g.s1) return g;
+  }
+  return null;
+}
+function inGap(s) { return !!gapAt(s); }
+function nearGapEdge(s, m) {
+  for (let i = 0; i < gaps.length; i++) {
+    const g = gaps[i];
+    if (s > g.s0 - m && s < g.s1 + m) return true;
+  }
+  return false;
+}
+function narrowAt(s) {
+  for (let i = 0; i < narrows.length; i++) {
+    const n = narrows[i];
+    if (s >= n.s0 && s <= n.s1) return n;
+  }
+  return null;
+}
+function narrowHalfAt(n, s) {
+  const intro = n.intro || 12;
+  const outro = n.outro || 10;
+  if (s < n.s0 + intro) return lerp(3.5, n.half, clamp((s - n.s0) / intro, 0, 1));
+  if (s > n.s1 - outro) return lerp(3.5, n.half, clamp((n.s1 - s) / outro, 0, 1));
+  return n.half;
+}
+function forkAt(s) {
+  for (let i = 0; i < forks.length; i++) {
+    const f = forks[i];
+    if (s >= f.s0 && s < f.sMerge) return f;
+  }
+  return null;
+}
+function forkBandGeom(fork, s, kind) {
+  const div = fork.diverge || 18;
+  const u = clamp((s - fork.s0) / div, 0, 1);
+  const conv = fork.converge || 14;
+  let m = 1;
+  const back = fork.sMerge - s;
+  if (back < conv) m = clamp(back / conv, 0, 1);
+  if (kind === 'short') {
+    if (s < fork.s0 || s > fork.sShortExit) return null;
+    return { kind: 'short', x: fork.shortX * u, half: lerp(3.5, fork.shortHalf, u) };
+  }
+  if (s < fork.s0 || s >= fork.sMerge) return null;
+  const mid = lerp(3.5, fork.longHalf, u);
+  return { kind: 'long', x: fork.longX * u * m, half: lerp(mid, 3.5, 1 - m) };
+}
+function bandsAt(s) {
+  const nar = narrowAt(s);
+  if (nar) return [{ kind: 'narrow', x: nar.x, half: narrowHalfAt(nar, s) }];
+  const fork = forkAt(s);
+  if (!fork) return null;
+  const bands = [];
+  const sh = forkBandGeom(fork, s, 'short');
+  const lg = forkBandGeom(fork, s, 'long');
+  if (sh) bands.push(sh);
+  if (lg) bands.push(lg);
+  return bands.length ? bands : null;
+}
+function tileZoneAt(s) {
+  for (let i = 0; i < tileZones.length; i++) {
+    const z = tileZones[i];
+    if (s >= z.s0 && s <= z.s1) return z;
+  }
+  return null;
+}
+function cpIndexAt(s) {
+  let idx = 0;
+  for (let i = 0; i < checkpoints.length; i++) if (s >= checkpoints[i]) idx = i;
+  return idx;
+}
+function blockX(b) { return b.x + (b.offX || 0); }
+function blockS(b) { return b.s + (b.offS || 0); }
 
 function canvasTex(draw, w, h) {
   const c = document.createElement('canvas');
@@ -130,9 +321,18 @@ function roundRect(g, x, y, w, h, r) {
    STATE
    ===================================================================== */
 let renderer, scene, camera, worldRoot, gradMap;
-let trackLength = TARGET_LEN;
+let hemiLight, dirLight, skyMesh = null, sunMesh = null;
+let mapDef = MAPS[0];
+let mapIndex = 0;
+let trackLength = 600;
+let roadStep = 1;
 let lutN = 0;
 let lutPX, lutPY, lutPZ, lutTX, lutTY, lutTZ, lutRX, lutRZ;
+let gaps = MAPS[0].gaps;
+let checkpoints = MAPS[0].cps;
+let narrows = [];
+let forks = [];
+let tileZones = [];
 let runners = [];
 let player = null;
 let blocks = [];
@@ -143,10 +343,13 @@ let hammers = [];
 let springs = [];
 let walls = [];
 let balls = [];
+let tiles = [];
+let rotors = [];
 let ballTimer = 1;
 let ballIntro = false;
-let blockMesh, ballMesh, padMesh, shadowMesh;
+let blockMesh = null, ballMesh = null, padMesh = null, shadowMesh = null, tileMesh = null;
 let podium, confetti, confData;
+let closeupId = null;
 
 let screen = 'menu';
 let mode = null;
@@ -191,16 +394,18 @@ const $= (id) => document.getElementById(id);
    TRACK
    ===================================================================== */
 function makeCurve(scale) {
-  const pts = RAW.map((p) => new THREE.Vector3(p[0] * scale, p[1], p[2] * scale));
+  const raw = mapDef.raw;
+  const pts = raw.map((p) => new THREE.Vector3(p[0] * scale, p[1], p[2] * scale));
   return new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.5);
 }
 function buildTrack() {
+  const target = mapDef.targetLen;
   let scale = 1;
   let curve = makeCurve(1);
   for (let i = 0; i < 8; i++) {
     const len = curve.getLength();
-    if (Math.abs(len - TARGET_LEN) < 0.4) break;
-    scale *= TARGET_LEN / len;
+    if (Math.abs(len - target) < 0.4) break;
+    scale *= target / len;
     curve = makeCurve(scale);
   }
   trackLength = curve.getLength();
@@ -428,14 +633,25 @@ function mergeParts(parts) {
 }
 function initGeos() {
   gradMap = makeGradient();
-  GEO.head = new THREE.SphereGeometry(0.40, 12, 8);
-  GEO.eye = new THREE.SphereGeometry(0.055, 6, 4);
-  GEO.cheek = new THREE.SphereGeometry(0.075, 6, 4);
-  GEO.torso = new THREE.CylinderGeometry(0.20, 0.24, 0.40, 8);
-  GEO.belly = new THREE.BoxGeometry(0.28, 0.22, 0.14);
-  GEO.arm = new THREE.CylinderGeometry(0.065, 0.075, 0.38, 6);
-  GEO.leg = new THREE.CylinderGeometry(0.085, 0.095, 0.4, 6);
-  GEO.shoe = new THREE.BoxGeometry(0.15, 0.08, 0.24);
+  GEO.head = new THREE.SphereGeometry(0.39, 12, 9);
+  GEO.eyeWhite = new THREE.SphereGeometry(0.09, 8, 6);
+  GEO.pupil = new THREE.SphereGeometry(0.042, 6, 4);
+  GEO.glint = new THREE.SphereGeometry(0.018, 4, 3);
+  GEO.eye = GEO.pupil;
+  GEO.cheek = new THREE.SphereGeometry(0.07, 6, 4);
+  GEO.smile = new THREE.TorusGeometry(0.07, 0.016, 3, 8, Math.PI);
+  GEO.smile.rotateZ(Math.PI);
+  GEO.mouthO = new THREE.SphereGeometry(0.045, 6, 4);
+  GEO.torso = new THREE.SphereGeometry(0.27, 10, 8);
+  GEO.belly = new THREE.SphereGeometry(0.12, 6, 4);
+  GEO.arm = new THREE.CylinderGeometry(0.055, 0.06, 0.28, 6);
+  GEO.hand = new THREE.SphereGeometry(0.055, 6, 4);
+  GEO.leg = new THREE.CylinderGeometry(0.07, 0.075, 0.32, 6);
+  GEO.shoe = new THREE.SphereGeometry(0.09, 6, 4);
+  GEO.earIn = new THREE.SphereGeometry(0.035, 5, 4);
+  GEO.bow = new THREE.SphereGeometry(0.08, 6, 4);
+  GEO.star = new THREE.OctahedronGeometry(0.11, 0);
+  GEO.xbar = new THREE.BoxGeometry(0.1, 0.02, 0.02);
   GEO.sweat = new THREE.SphereGeometry(0.045, 5, 4);
   GEO.line = new THREE.BoxGeometry(0.05, 0.05, 0.42);
   GEO.ring = new THREE.RingGeometry(0.34, 0.55, 18);
@@ -476,10 +692,27 @@ function initGeos() {
   GEO.blob = new THREE.PlaneGeometry(1.5, 1.5);
   GEO.blob.rotateX(-Math.PI / 2);
   GEO.box = new THREE.BoxGeometry(1, 1, 1);
+  GEO.tile = new THREE.BoxGeometry(1, 0.28, 1);
+  GEO.crystal = new THREE.OctahedronGeometry(0.7, 0);
+  GEO.pine = mergeParts([
+    { geo: new THREE.CylinderGeometry(0.12, 0.16, 0.4, 5), y: 0.15, color: 0x6b4634 },
+    { geo: new THREE.ConeGeometry(0.7, 0.9, 6), y: 0.7, color: 0x1d6b45 },
+    { geo: new THREE.ConeGeometry(0.55, 0.75, 6), y: 1.15, color: 0x228055 },
+    { geo: new THREE.ConeGeometry(0.38, 0.6, 6), y: 1.55, color: 0x2f9460 },
+  ]);
+  GEO.snowman = mergeParts([
+    { geo: new THREE.SphereGeometry(0.42, 7, 5), y: 0.35, color: 0xf7fbff },
+    { geo: new THREE.SphereGeometry(0.3, 7, 5), y: 0.9, color: 0xffffff },
+    { geo: new THREE.SphereGeometry(0.2, 6, 4), y: 1.3, color: 0xf4f8ff },
+  ]);
+  GEO.scoop = new THREE.SphereGeometry(0.32, 7, 5);
+  GEO.cone = new THREE.ConeGeometry(0.28, 0.55, 6);
 
   MAT.ball = new THREE.MeshBasicMaterial({ vertexColors: true });
   MAT.white = toon(0xffffff);
+  MAT.glint = new THREE.MeshBasicMaterial({ color: 0xffffff });
   MAT.eye = toon(0x1b1b1b);
+  MAT.mouth = toon(0x5a2840);
   MAT.cheek = toon(0xff9bb8);
   MAT.pink = toon(0xff8ec4);
   MAT.sweat = toon(0xb7e6ff);
@@ -514,6 +747,10 @@ function initGeos() {
     map: chev, color: 0xffd24a, transparent: true, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide,
   });
+  if (blobTex) blobTex.userData.shared = true;
+  if (chev) chev.userData.shared = true;
+  Object.keys(GEO).forEach((k) => { if (GEO[k]) GEO[k].userData.shared = true; });
+  Object.keys(MAT).forEach((k) => { if (MAT[k]) MAT[k].userData.shared = true; });
 }
 function makeInst(geo, mat, n, parent) {
   const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, n));
@@ -533,16 +770,21 @@ function setInst(mesh, i, pos, quat, sx, sy, sz) {
 /* =====================================================================
    WORLD / DECOR
    ===================================================================== */
-function buildRoad(s0, s1) {
+function buildRoad(s0, s1, opt) {
   // Trim | body | crisp lane line | body. Line verts are isolated so white
   // does not flood the center of the ribbon.
+  opt = opt || {};
+  const halfFn = opt.halfFn || function () { return 3.5; };
+  const xFn = opt.xFn || function () { return 0; };
+  const yLift = opt.yLift || 0;
+  const palette = opt.palette || null;
   const xs = [-3.5, -3.15, -3.12, -1.46, -1.24, -1.02, -0.98, 0.98, 1.02, 1.24, 1.46, 3.12, 3.15, 3.5];
   const SURF = xs.length;
   const ROW = SURF + 4;
   const LINE = { 4: 1, 5: 1, 8: 1, 9: 1 };
   const TRIM = { 0: 1, 1: 1, 12: 1, 13: 1 };
   const rows = [];
-  for (let s = s0; s <= s1 + 1e-3; s += ROAD_STEP) rows.push(Math.min(s, s1));
+  for (let s = s0; s <= s1 + 1e-3; s += roadStep) rows.push(Math.min(s, s1));
   if (rows.length && rows[rows.length - 1] < s1 - 0.05) rows.push(s1);
   const n = rows.length;
   if (n < 2) return;
@@ -564,8 +806,38 @@ function buildRoad(s0, s1) {
     skirtOrange: new THREE.Color(0xd46508),
   };
   function paintAt(s) {
-    const sec = sectionAt(s);
     const alt = (Math.floor(s / 6) & 1) === 0;
+    if (palette === 'cookie') {
+      return alt
+        ? { body: new THREE.Color(0xf0c48a), trim: new THREE.Color(0xfff6ea), skirt: new THREE.Color(0xa56a3a), solid: false }
+        : { body: new THREE.Color(0xd89455), trim: new THREE.Color(0xffe7c4), skirt: new THREE.Color(0x8a552c), solid: false };
+    }
+    if (palette === 'ice') {
+      return alt
+        ? { body: new THREE.Color(0xf7fbff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x9ec4e4), solid: true }
+        : { body: new THREE.Color(0xc5e4ff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x7eafd4), solid: true };
+    }
+    if (palette === 'short') {
+      return alt
+        ? { body: new THREE.Color(0xff6aa8), trim: new THREE.Color(0xfff0c0), skirt: new THREE.Color(0xc2185b), solid: false }
+        : { body: new THREE.Color(0xffe14a), trim: new THREE.Color(0xfff6ea), skirt: new THREE.Color(0xe09000), solid: false };
+    }
+    if (palette === 'long') {
+      return alt
+        ? { body: new THREE.Color(0x7dface), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x0b8a72), solid: true }
+        : { body: new THREE.Color(0xcfffe8), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x14967c), solid: true };
+    }
+    if (palette === 'candy' || (palette == null && mapDef.theme.road === 'candy')) {
+      return alt
+        ? { body: new THREE.Color(0xff8ec4), trim: new THREE.Color(0xfff6ea), skirt: new THREE.Color(0xe05088), solid: false }
+        : { body: new THREE.Color(0x9af0d4), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x1aa888), solid: true };
+    }
+    if (palette === 'snow' || (palette == null && mapDef.theme.road === 'snow')) {
+      return alt
+        ? { body: new THREE.Color(0xf7fbff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x9ebbd4), solid: true }
+        : { body: new THREE.Color(0xcfe6ff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x7aa4c8), solid: true };
+    }
+    const sec = sectionAt(s);
     if (sec === 4) {
       return alt
         ? { body: COL.lemon, trim: COL.trimGold, skirt: COL.skirtOrange, solid: false }
@@ -581,7 +853,9 @@ function buildRoad(s0, s1) {
       : { body: COL.cream, trim: COL.trimCream, skirt: COL.skirtPink, solid: false };
   }
   function setV(vi, s, x, y, c) {
-    toWorld(s, x, y, vD);
+    const half = halfFn(s);
+    const xx = (x / 3.5) * half + xFn(s);
+    toWorld(s, xx, y + yLift, vD);
     pos[vi * 3] = vD.x; pos[vi * 3 + 1] = vD.y; pos[vi * 3 + 2] = vD.z;
     col[vi * 3] = c.r; col[vi * 3 + 1] = c.g; col[vi * 3 + 2] = c.b;
   }
@@ -622,13 +896,14 @@ function buildRoad(s0, s1) {
   worldRoot.add(new THREE.Mesh(g, MAT.road));
 }
 function buildSky() {
+  const th = mapDef.theme;
   const geo = new THREE.SphereGeometry(430, 24, 16);
   const pa = geo.attributes.position;
   const col = new Float32Array(pa.count * 3);
-  const top = new THREE.Color(0x2f7dff);
-  const mid = new THREE.Color(0x9ad8ff);
-  const hor = new THREE.Color(0xffd0e8);
-  const bot = new THREE.Color(0xc9e8ff);
+  const top = new THREE.Color(th.skyTop);
+  const mid = new THREE.Color(th.skyMid);
+  const hor = new THREE.Color(th.skyHor);
+  const bot = new THREE.Color(th.skyBot);
   for (let i = 0; i < pa.count; i++) {
     const y = pa.getY(i) / 430;
     if (y > 0.12) colA.copy(mid).lerp(top, clamp((y - 0.12) / 0.88, 0, 1));
@@ -642,33 +917,41 @@ function buildSky() {
   }));
   mesh.frustumCulled = false;
   scene.add(mesh);
-  const sun = new THREE.Mesh(new THREE.SphereGeometry(16, 12, 8), new THREE.MeshBasicMaterial({ color: 0xfff4b8, fog: false }));
+  skyMesh = mesh;
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(16, 12, 8), new THREE.MeshBasicMaterial({ color: th.sun, fog: false }));
   sun.position.set(-90, 150, -40);
   scene.add(sun);
+  sunMesh = sun;
 }
 function buildGround() {
   const geo = new THREE.CircleGeometry(980, 28);
   geo.rotateX(-Math.PI / 2);
-  const mesh = new THREE.Mesh(geo, toon(0x69c85c));
+  const mesh = new THREE.Mesh(geo, toon(mapDef.theme.ground));
   mesh.position.y = GROUND_Y;
   worldRoot.add(mesh);
 }
 function nearFeature(s) {
   if (Math.abs(s - 16) < 3.2) return true;
-  if (Math.abs(s - 120) < 2.6) return true;
-  if (Math.abs(s - 260) < 2.6) return true;
-  if (Math.abs(s - 380) < 2.6) return true;
+  for (let i = 1; i < checkpoints.length; i++) {
+    if (Math.abs(s - checkpoints[i]) < 2.6) return true;
+  }
   if (s > trackLength - 7) return true;
   return false;
 }
 function buildDecor() {
   const postPos = [];
-  for (let s = 4; s < trackLength - 2; s += 6) {
-    if (inGap(s) || s > GAP0 - 1 && s < GAP1 + 1) continue;
+  const postStep = mapDef.targetLen > 900 ? 8 : 6;
+  const postGeo = mapDef.theme.decor === 'forest'
+    ? GEO.post
+    : stripeColorGeo(new THREE.CylinderGeometry(0.1, 0.12, 1.15, 6), 6, mapDef.theme.postA, mapDef.theme.postB);
+  for (let s = 4; s < trackLength - 2; s += postStep) {
+    if (nearGapEdge(s, 1)) continue;
     if (nearFeature(s)) continue;
+    if (narrowAt(s) || forkAt(s) || tileZoneAt(s)) continue;
     postPos.push([s, -3.62], [s, 3.62]);
   }
-  const postMesh = makeInst(GEO.post, MAT.vc, postPos.length);
+  const postMesh = makeInst(postGeo, MAT.vc, Math.max(1, postPos.length));
+  postMesh.count = postPos.length;
   qA.identity();
   postPos.forEach((p, i) => {
     toWorld(p[0], p[1], 0.58, vD);
@@ -676,6 +959,7 @@ function buildDecor() {
   });
   postMesh.instanceMatrix.needsUpdate = true;
 
+  if (mapDef.theme.decor === 'forest') {
   const sites = [];
   for (let s = 14; s < trackLength; s += 16) {
     const side = (Math.floor(s / 16) % 2 === 0) ? 1 : -1;
@@ -730,10 +1014,19 @@ function buildDecor() {
     setInst(stickMesh, i, vD, qA);
   });
   stickMesh.instanceMatrix.needsUpdate = true;
+  } else if (mapDef.theme.decor === 'candy') {
+    buildCandyProps();
+  } else {
+    buildSnowProps();
+  }
 
-  const hillN = 26;
+  const hillN = mapDef.targetLen > 900 ? 18 : 22;
   const hillMesh = makeInst(GEO.hill, toon(0xffffff), hillN);
-  const hillCols = [0x7dce6a, 0x8ed67a, 0x63b85a, 0xa4d86a];
+  const hillCols = mapDef.theme.decor === 'snow'
+    ? [0xf4f8ff, 0xd5e6f5, 0xeef6ff, 0xc5d8ea]
+    : mapDef.theme.decor === 'candy'
+      ? [0xffb7d8, 0xffe0a8, 0xb6f3da, 0xffc4e4]
+      : [0x7dce6a, 0x8ed67a, 0x63b85a, 0xa4d86a];
   for (let i = 0; i < hillN; i++) {
     const s = (i / hillN) * trackLength;
     const side = i % 2 === 0 ? 1 : -1;
@@ -754,7 +1047,7 @@ function buildDecor() {
   for (let i = 0; i < cloudN; i++) {
     const s = (i * 47) % trackLength;
     const side = (i % 2 === 0 ? 1 : -1) * (6 + (i % 4) * 5);
-    const y = (i % 5 === 0 && s > GAP0 && s < GAP1) ? -8 : 10 + (i % 4) * 3.5;
+    const y = (i % 5 === 0 && inGap(s)) ? -8 : 10 + (i % 4) * 3.5;
     toWorld(s, side, y, vD);
     qA.setFromAxisAngle(WORLD_UP, i);
     const sc = 2.2 + (i % 3) * 0.8;
@@ -762,20 +1055,179 @@ function buildDecor() {
   }
   cloudMesh.instanceMatrix.needsUpdate = true;
 
-  // distant floating islets in the gap
-  const floatN = 6;
-  const floatMesh = makeInst(GEO.island, MAT.vc, floatN);
-  for (let i = 0; i < floatN; i++) {
-    const s = GAP0 + 12 + i * 16;
-    toWorld(s, (i % 2 === 0 ? -1 : 1) * (12 + i), -6 - (i % 3), vD);
-    qA.identity();
-    setInst(floatMesh, i, vD, qA, 3.2, 1.4, 2.6);
+  // distant floating islets in each gap
+  let floatN = 0;
+  for (let gi = 0; gi < gaps.length; gi++) floatN += 6;
+  if (floatN > 0) {
+    const floatMesh = makeInst(GEO.island, MAT.vc, floatN);
+    let fi = 0;
+    for (let gi = 0; gi < gaps.length; gi++) {
+      const g0 = gaps[gi].s0;
+      for (let i = 0; i < 6; i++) {
+        const s = g0 + 12 + i * 16;
+        toWorld(s, (i % 2 === 0 ? -1 : 1) * (12 + i), -6 - (i % 3), vD);
+        qA.identity();
+        setInst(floatMesh, fi++, vD, qA, 3.2, 1.4, 2.6);
+      }
+    }
+    floatMesh.instanceMatrix.needsUpdate = true;
   }
-  floatMesh.instanceMatrix.needsUpdate = true;
 
-  // castles
-  addCastleAt(trackLength * 0.08, 26, 1.7);
-  addCastleAt(trackLength * 0.96, -18, 2.1);
+  if (mapDef.theme.decor === 'forest') {
+    addCastleAt(trackLength * 0.08, 26, 1.7);
+    addCastleAt(trackLength * 0.96, -18, 2.1);
+  } else if (mapDef.theme.decor === 'candy') {
+    addCandyLandmark(trackLength * 0.12, 18, 1.5);
+    addCandyLandmark(trackLength * 0.9, -16, 1.8);
+  } else {
+    addSnowLandmark(trackLength * 0.1, 20, 1.6);
+    addSnowLandmark(trackLength * 0.92, -14, 1.9);
+  }
+}
+function buildCandyProps() {
+  const pops = [];
+  const creams = [];
+  const drops = [];
+  for (let s = 18; s < trackLength - 8; s += 18) {
+    const side = (Math.floor(s / 18) % 2 === 0) ? 1 : -1;
+    const dist = 7.6 + (Math.floor(s) % 4);
+    const kind = Math.floor(s / 18) % 3;
+    if (kind === 0) pops.push({ s: s, x: side * dist });
+    else if (kind === 1) creams.push({ s: s, x: side * dist });
+    else drops.push({ s: s, x: side * dist });
+    if (Math.floor(s) % 54 === 0) pops.push({ s: s + 8, x: -side * (dist + 2.2) });
+  }
+  const popColors = [0xff5d8a, 0xffe14a, 0x7de8c0, 0xb388ff, 0xff9a3c];
+  if (pops.length) {
+    const popMesh = makeInst(GEO.pop, toon(0xffffff), pops.length);
+    const stickMesh = makeInst(new THREE.CylinderGeometry(0.07, 0.09, 1.2, 5), toon(0xfff6ea), pops.length);
+    pops.forEach((st, i) => {
+      qA.identity();
+      toWorld(st.s, st.x, 1.55, vD);
+      setInst(popMesh, i, vD, qA);
+      popMesh.setColorAt(i, colA.set(popColors[i % popColors.length]));
+      toWorld(st.s, st.x, 0.62, vD);
+      setInst(stickMesh, i, vD, qA);
+    });
+    popMesh.instanceMatrix.needsUpdate = true;
+    if (popMesh.instanceColor) popMesh.instanceColor.needsUpdate = true;
+    stickMesh.instanceMatrix.needsUpdate = true;
+  }
+  if (creams.length) {
+    const coneMesh = makeInst(GEO.cone, toon(0xffe0b0), creams.length);
+    const scoopMesh = makeInst(GEO.scoop, toon(0xffffff), creams.length);
+    const scoop2 = makeInst(GEO.scoop, toon(0xffffff), creams.length);
+    const cols = [0xff8ec4, 0x7dface, 0xffe14a];
+    creams.forEach((st, i) => {
+      qA.identity();
+      toWorld(st.s, st.x, 0.28, vD);
+      setInst(coneMesh, i, vD, qA, 1.35, 1.7, 1.35);
+      toWorld(st.s, st.x, 1.0, vD);
+      setInst(scoopMesh, i, vD, qA, 1.15, 1.15, 1.15);
+      scoopMesh.setColorAt(i, colA.set(cols[i % 3]));
+      toWorld(st.s, st.x, 1.45, vD);
+      setInst(scoop2, i, vD, qA, 0.82, 0.82, 0.82);
+      scoop2.setColorAt(i, colA.set(cols[(i + 1) % 3]));
+    });
+    coneMesh.instanceMatrix.needsUpdate = true;
+    scoopMesh.instanceMatrix.needsUpdate = true;
+    scoop2.instanceMatrix.needsUpdate = true;
+    if (scoopMesh.instanceColor) scoopMesh.instanceColor.needsUpdate = true;
+    if (scoop2.instanceColor) scoop2.instanceColor.needsUpdate = true;
+  }
+  if (drops.length) {
+    const dropMesh = makeInst(GEO.scoop, toon(0xffffff), drops.length);
+    drops.forEach((st, i) => {
+      toWorld(st.s, st.x, 0.42, vD);
+      qA.identity();
+      setInst(dropMesh, i, vD, qA, 1.45, 1.05, 1.45);
+      dropMesh.setColorAt(i, colA.set(popColors[(i + 2) % popColors.length]));
+    });
+    dropMesh.instanceMatrix.needsUpdate = true;
+    if (dropMesh.instanceColor) dropMesh.instanceColor.needsUpdate = true;
+  }
+}
+function buildSnowProps() {
+  const pines = [];
+  const men = [];
+  const crystals = [];
+  for (let s = 22; s < trackLength - 10; s += 26) {
+    const side = (Math.floor(s / 26) % 2 === 0) ? 1 : -1;
+    const dist = 8.4 + (Math.floor(s) % 4);
+    const k = Math.floor(s / 26) % 3;
+    if (k === 0) pines.push({ s: s, x: side * dist });
+    else if (k === 1) men.push({ s: s, x: side * dist });
+    else crystals.push({ s: s, x: side * (dist - 0.6) });
+    if (Math.floor(s) % 78 === 0) pines.push({ s: s + 9, x: -side * (dist + 3.2) });
+  }
+  if (pines.length) {
+    const mesh = makeInst(GEO.pine, MAT.vc, pines.length);
+    pines.forEach((st, i) => {
+      toWorld(st.s, st.x, 0, vD);
+      qA.setFromAxisAngle(WORLD_UP, i * 0.7);
+      const sc = 1.25 + (i % 3) * 0.22;
+      setInst(mesh, i, vD, qA, sc, sc, sc);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  if (men.length) {
+    const mesh = makeInst(GEO.snowman, MAT.vc, men.length);
+    men.forEach((st, i) => {
+      toWorld(st.s, st.x, 0, vD);
+      qA.identity();
+      setInst(mesh, i, vD, qA, 1.3, 1.3, 1.3);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  if (crystals.length) {
+    const mesh = makeInst(GEO.crystal, toon(0xffffff), crystals.length);
+    const cols = [0xd7f0ff, 0xffffff, 0xb7dcff, 0xeaf6ff];
+    crystals.forEach((st, i) => {
+      toWorld(st.s, st.x, 0.75, vD);
+      qA.setFromAxisAngle(WORLD_UP, i * 0.4);
+      setInst(mesh, i, vD, qA, 0.85, 1.35, 0.85);
+      mesh.setColorAt(i, colA.set(cols[i % cols.length]));
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
+}
+function addCandyLandmark(s, x, sc) {
+  const g = new THREE.Group();
+  placeOnTrack(g, s, x, 0);
+  g.position.y = GROUND_Y;
+  g.scale.setScalar(sc);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.5, 0.55, 8), toon(0xffe0b0));
+  base.position.y = 0.35;
+  g.add(base);
+  [[0.2, 0xff8ec4, 2.1], [1.15, 0x7dface, 1.45], [1.95, 0xffe14a, 0.95]].forEach((p) => {
+    const scoop = new THREE.Mesh(GEO.scoop, toon(p[1]));
+    scoop.position.y = p[0] + 0.7;
+    scoop.scale.setScalar(p[2]);
+    g.add(scoop);
+  });
+  const cherry = new THREE.Mesh(GEO.pop, toon(0xff3355));
+  cherry.position.y = 3.9;
+  cherry.scale.setScalar(0.42);
+  g.add(cherry);
+  worldRoot.add(g);
+}
+function addSnowLandmark(s, x, sc) {
+  const g = new THREE.Group();
+  placeOnTrack(g, s, x, 0);
+  g.position.y = GROUND_Y;
+  g.scale.setScalar(sc);
+  const pine = new THREE.Mesh(GEO.pine, MAT.vc);
+  pine.position.set(-1.5, 0, 0);
+  pine.scale.setScalar(1.7);
+  const man = new THREE.Mesh(GEO.snowman, MAT.vc);
+  man.position.set(1.25, 0, 0.2);
+  man.scale.setScalar(1.55);
+  const cry = new THREE.Mesh(GEO.crystal, toon(0xd7f4ff));
+  cry.position.set(0.1, 1.3, -1.3);
+  cry.scale.set(1.05, 1.7, 1.05);
+  g.add(pine, man, cry);
+  worldRoot.add(g);
 }
 function addCastleAt(s, x, sc) {
   const g = new THREE.Group();
@@ -909,54 +1361,22 @@ function buildArch(s, kind) {
 /* =====================================================================
    OBSTACLES
    ===================================================================== */
-function buildObstacles() {
-  // hurdles
-  const rowS = [136, 150, 164, 178, 192, 206, 220, 234, 248];
-  const gapAt = { 2: 1, 5: 3, 7: 0 };
-  const lanes = [-2.625, -0.875, 0.875, 2.625];
-  rowS.forEach((s, ri) => {
-    const gaps = gapAt[ri] == null ? [] : [gapAt[ri]];
-    const row = { s, gaps, lanes: [] };
-    lanes.forEach((x, li) => {
-      if (gaps.indexOf(li) >= 0) return;
-      const h = { s, x, half: 0.98, id: hurdles.length }; // 0.875 lane half-width + runner radius (no gap between adjacent bars)
-      hurdles.push(h);
-      row.lanes.push(h);
-    });
-    hurdleRows.push(row);
+function pushBlock(s, x, kind, phase, color, amp, omega) {
+  blocks.push({
+    id: blocks.length, s, x, kind,
+    phase, half: 1.1, offX: 0, offS: 0, top: 0, tilt: 0,
+    solid: true, hidden: false, flash: false, color,
+    amp: amp || 0, omega: omega || 0,
   });
-  const barMesh = makeInst(GEO.bar, MAT.vc, hurdles.length);
-  const hpMesh = makeInst(GEO.hpost, toon(0xfff6ea), hurdles.length * 2);
-  hurdles.forEach((h, i) => {
-    toWorld(h.s, h.x, 0.86, vD);
-    basisAt(h.s, 0, vA, vB, vC);
-    mA.makeBasis(vA, vB, vC);
-    qA.setFromRotationMatrix(mA);
-    setInst(barMesh, i, vD, qA);
-    [-0.72, 0.72].forEach((dx, k) => {
-      toWorld(h.s, h.x + dx, 0.41, vD);
-      qB.identity();
-      setInst(hpMesh, i * 2 + k, vD, qB);
-    });
-  });
-  barMesh.instanceMatrix.needsUpdate = true;
-  hpMesh.instanceMatrix.needsUpdate = true;
-
-  // boost pads
-  [[30, -1.15], [58, 1.25], [86, 0], [112, -1.2]].forEach((p) => {
-    pads.push({ s: p[0], x: p[1], hs: 1.55, hx: 1.15 });
-  });
-  padMesh = makeInst(GEO.pad, MAT.pad, pads.length);
-  pads.forEach((p, i) => layoutPad(p, i, 1));
-  padMesh.instanceMatrix.needsUpdate = true;
-
-  // blocks — long decks (~8 m) with ~1.7 m gaps. A full jump travels ~5.4 m
-  // at base speed, so each deck is long enough to catch that landing.
+}
+function buildForestBlocks() {
+  const g0 = gaps[0].s0;
+  const g1 = gaps[0].s1;
   const blanes = [-2.15, 0, 2.15];
   const colors = [0xffe14a, 0xff9a3c, 0x7de8b0, 0xff8ec8];
-  const exitLip = GAP1 - 1.65;
+  const exitLip = g1 - 1.65;
   const decks = [];
-  let cursor = GAP0 + 1.65;
+  let cursor = g0 + 1.65;
   while (cursor + 6.2 < exitLip) {
     const room = exitLip - cursor;
     const span = room < 8.6 + 1.75 + 6.2 ? room : 8.6;
@@ -965,7 +1385,6 @@ function buildObstacles() {
     cursor += span + 1.75;
   }
   decks.forEach((deck) => {
-    // Even decks are a full floor so runners can change lanes. Odd decks drop one lane.
     const omit = (deck.i % 2 === 1 && deck.far < exitLip - 0.2) ? (deck.i % 3) : -1;
     for (let s = deck.near + 1.1; s <= deck.far - 1.05; s += 2.15) {
       for (let li = 0; li < 3; li++) {
@@ -976,49 +1395,232 @@ function buildObstacles() {
           else if (deck.i % 4 === 2 && li === 2) kind = 'wobble';
           else if (deck.i % 4 === 3 && li === 1) kind = 'vanish';
         }
-        blocks.push({
-          id: blocks.length, s, x: blanes[li], kind,
-          phase: deck.i * 0.9 + li * 1.4 + s * 0.02,
-          half: 1.1, offX: 0, top: 0, tilt: 0,
-          solid: true, hidden: false, flash: false,
-          color: colors[(deck.i + li) % 4],
-        });
+        pushBlock(s, blanes[li], kind, deck.i * 0.9 + li * 1.4 + s * 0.02, colors[(deck.i + li) % 4], 0, 0);
       }
     }
   });
-  blockMesh = makeInst(GEO.block, toon(0xffffff), blocks.length);
-  blocks.forEach((b, i) => blockMesh.setColorAt(i, colA.set(b.color)));
-  blockMesh.instanceColor.needsUpdate = true;
-  updateBlocks(0);
-  syncBlocks();
+}
+function buildMoveBlocks() {
+  const g = gaps[0];
+  const g0 = g.s0;
+  const g1 = g.s1;
+  const blanes = [-2.15, 0, 2.15];
+  const candy = mapDef.id === 'candy';
+  const colors = candy
+    ? [0xff8ec4, 0xffe14a, 0x7dface, 0xffb347]
+    : [0xe7f4ff, 0xffffff, 0xb7dcff, 0xd7e6f5];
+  const exitLip = g1 - 1.65;
+  const decks = [];
+  let cursor = g0 + 1.65;
+  const span0 = candy ? 8.2 : 8.0;
+  const gapW = candy ? 1.85 : 1.8;
+  while (cursor + 5.6 < exitLip) {
+    const room = exitLip - cursor;
+    const span = room < span0 + gapW + 5.6 ? room : span0;
+    decks.push({ near: cursor, far: cursor + span, i: decks.length });
+    if (span < span0 - 0.2) break;
+    cursor += span + gapW;
+  }
+  const ampX = candy ? 1.05 : 1.15;
+  decks.forEach((deck) => {
+    const omit = -1;
+    for (let s = deck.near + 1.05; s <= deck.far - 1.0; s += 2.15) {
+      for (let li = 0; li < 3; li++) {
+        if (li === omit) continue;
+        let kind = 'static';
+        let amp = 0;
+        let omega = 0;
+        if (deck.i > 0 && deck.far < exitLip - 0.2) {
+          const m = deck.i % 4;
+          if (m === 1 && li !== 1) { kind = 'moveX'; amp = ampX; omega = candy ? 0.8 : 0.95; }
+          else if (m === 2 && li === 1) { kind = 'moveS'; amp = candy ? 0.55 : 0.6; omega = 0.85; }
+          else if (m === 3 && li === 1) kind = 'vanish';
+          else if (m === 0 && li === 0) { kind = 'moveX'; amp = ampX * 0.65; omega = 0.7; }
+        }
+        pushBlock(s, blanes[li], kind, deck.i * 0.7 + li * 1.6, colors[(deck.i + li) % 4], amp, omega);
+      }
+    }
+  });
+}
+function makeTile(s, x, phase, zone, color, half, always) {
+  return {
+    s, x, phase, zone: !!zone, color, half: half || 1.05,
+    hs: 1.15, period: 2.5, on: 1.9, top: 0.16, always: !!always,
+    offX: 0, offS: 0, solid: true, hidden: false, flash: false, kind: 'tile',
+  };
+}
+function buildTileZone(z) {
+  const lanes = [-2.2, 0, 2.2];
+  const colors = z.colors || [0xff8ec4, 0xffe14a, 0x7dface];
+  const period = 2.5;
+  const gate = z.s0 + 1.05;
+  for (let li = 0; li < lanes.length; li++) {
+    tiles.push(makeTile(gate, lanes[li], 0, true, colors[li % colors.length], 1.05, true));
+  }
+  for (let s = z.s0 + 3.3; s <= z.s1 - 2.5; s += 2.4) {
+    for (let li = 0; li < 3; li++) {
+      tiles.push(makeTile(s, lanes[li], (li * period) / 3, true, colors[li % colors.length], 1.05, false));
+    }
+  }
+  // Solid lip so the row spacing cannot leave a cliff before the road returns.
+  const lip = z.s1 - 1.05;
+  for (let li = 0; li < 3; li++) {
+    tiles.push(makeTile(lip, lanes[li], 0, true, colors[li % colors.length], 1.05, true));
+  }
+}
+function buildRotor(rs) {
+  const root = new THREE.Group();
+  placeOnTrack(root, rs.s, rs.x || 0, 0);
+  const pivotY = rs.pivotY || 1.08;
+  const half = rs.halfLen || 3.15;
+  const hub = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), toon(rs.cap || 0xff4d8d));
+  hub.position.y = pivotY;
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(half * 2, 0.16, 0.18), toon(rs.color || 0xfff6ea));
+  const capL = new THREE.Mesh(new THREE.SphereGeometry(0.16, 6, 4), toon(rs.cap || 0xff4d8d));
+  capL.position.set(-half, 0, 0);
+  const capR = capL.clone();
+  capR.position.x = half;
+  const spin = new THREE.Group();
+  spin.position.y = pivotY;
+  spin.add(bar, capL, capR);
+  root.add(hub, spin);
+  worldRoot.add(root);
+  return {
+    s: rs.s, x: rs.x || 0, halfLen: half, omega: rs.omega || 1, phase: rs.phase || 0,
+    pivotY, spin, short: !!rs.short, angle: 0,
+  };
+}
+function addForkSign(s, x, text, color) {
+  const g = new THREE.Group();
+  placeOnTrack(g, s, x, 0);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.3, 5), toon(0xfff6ea));
+  pole.position.y = 0.65;
+  const tex = canvasTex((ctx, w, h) => {
+    ctx.fillStyle = color;
+    roundRect(ctx, 8, 18, w - 16, h - 36, 18);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 64px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, w / 2, h / 2);
+  }, 256, 128);
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(1.45, 0.68), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
+  board.position.y = 1.42;
+  g.add(pole, board);
+  worldRoot.add(g);
+}
+function buildObstacles() {
+  hurdles.length = 0;
+  hurdleRows.length = 0;
+  pads.length = 0;
+  blocks.length = 0;
+  hammers.length = 0;
+  springs.length = 0;
+  walls.length = 0;
+  tiles.length = 0;
+  rotors.length = 0;
 
-  // balls
-  for (let i = 0; i < BALL_MAX; i++) balls.push({ alive: false, s: 0, x: 0, spin: 0 });
+  (mapDef.hurdles || []).forEach((rowSpec) => {
+    const gapsL = rowSpec.gaps ? rowSpec.gaps.slice() : [];
+    const row = { s: rowSpec.s, gaps: gapsL, lanes: [] };
+    HURDLE_X.forEach((x, li) => {
+      if (gapsL.indexOf(li) >= 0) return;
+      const h = { s: rowSpec.s, x, half: 0.98, id: hurdles.length };
+      hurdles.push(h);
+      row.lanes.push(h);
+    });
+    hurdleRows.push(row);
+  });
+  if (hurdles.length) {
+    const barMesh = makeInst(GEO.bar, MAT.vc, hurdles.length);
+    const hpMesh = makeInst(GEO.hpost, toon(0xfff6ea), hurdles.length * 2);
+    hurdles.forEach((h, i) => {
+      toWorld(h.s, h.x, 0.86, vD);
+      basisAt(h.s, 0, vA, vB, vC);
+      mA.makeBasis(vA, vB, vC);
+      qA.setFromRotationMatrix(mA);
+      setInst(barMesh, i, vD, qA);
+      [-0.72, 0.72].forEach((dx, k) => {
+        toWorld(h.s, h.x + dx, 0.41, vD);
+        qB.identity();
+        setInst(hpMesh, i * 2 + k, vD, qB);
+      });
+    });
+    barMesh.instanceMatrix.needsUpdate = true;
+    hpMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  (mapDef.pads || []).forEach((p) => {
+    pads.push({ s: p[0], x: p[1], hs: 1.55, hx: 1.15 });
+  });
+  padMesh = makeInst(GEO.pad, MAT.pad, Math.max(1, pads.length));
+  padMesh.count = pads.length;
+  pads.forEach((p, i) => layoutPad(p, i, 1));
+  padMesh.instanceMatrix.needsUpdate = true;
+
+  if (gaps.length) {
+    if (mapDef.blockStyle === 'forest') buildForestBlocks();
+    else buildMoveBlocks();
+  }
+  blockMesh = makeInst(GEO.block, toon(0xffffff), Math.max(1, blocks.length));
+  blockMesh.count = blocks.length;
+  blocks.forEach((b, i) => blockMesh.setColorAt(i, colA.set(b.color)));
+  if (blockMesh.instanceColor) blockMesh.instanceColor.needsUpdate = true;
+
+  if (balls.length === 0) {
+    for (let i = 0; i < BALL_MAX; i++) balls.push({ alive: false, s: 0, x: 0, spin: 0 });
+  } else {
+    for (let i = 0; i < balls.length; i++) balls[i].alive = false;
+  }
   ballMesh = makeInst(GEO.ball, MAT.ball, BALL_MAX);
 
-  // hammers
-  const hammerSpecs = [
-    { s: 494, phase: 0.2, omega: 1.25, amp: 1.02 },
-    { s: 524, phase: 2.1, omega: 1.45, amp: 1.0 },
-    { s: 552, phase: 4.0, omega: 1.15, amp: 1.05 },
-  ];
-  hammerSpecs.forEach((hs) => hammers.push(buildHammer(hs)));
+  (mapDef.hammers || []).forEach((hs) => hammers.push(buildHammer(hs)));
+  (mapDef.rotors || []).forEach((rs) => rotors.push(buildRotor(rs)));
+  for (let fi = 0; fi < forks.length; fi++) {
+    const f = forks[fi];
+    if (f.rotorS) {
+      rotors.push(buildRotor({
+        s: f.rotorS, x: f.shortX, halfLen: 1.35, omega: 1.05, phase: 0.4,
+        pivotY: 1.08, color: 0xfff6ea, cap: 0xff4d8d, short: true,
+      }));
+    }
+    const tileS = f.tileS || [];
+    for (let ti = 0; ti < tileS.length; ti++) {
+      tiles.push(makeTile(tileS[ti], f.shortX, 0.4 + ti * 0.85, false, 0xff8ec4, 0.95));
+    }
+  }
+  for (let zi = 0; zi < tileZones.length; zi++) buildTileZone(tileZones[zi]);
 
-  // springs + walls relative to the finish so they stay on the track
-  const sp1 = trackLength - 40;
-  const sp2 = trackLength - 20;
-  springs.push(buildSpring(sp1, 0));
-  springs.push(buildSpring(sp2, 0));
-  walls.push(buildWall(sp1 + 6.1));
-  walls.push(buildWall(sp2 + 6.1));
+  const fin = mapDef.finale || [-40, -20];
+  for (let i = 0; i < fin.length; i++) {
+    const s = trackLength + fin[i];
+    springs.push(buildSpring(s, 0));
+    walls.push(buildWall(s + 6.1));
+  }
 
   buildArch(16, 'start');
-  buildArch(120, 'cp');
-  buildArch(260, 'cp');
-  buildArch(380, 'cp');
+  for (let i = 1; i < checkpoints.length; i++) buildArch(checkpoints[i], 'cp');
   buildArch(trackLength - 0.4, 'goal');
 
+  for (let fi = 0; fi < forks.length; fi++) {
+    const f = forks[fi];
+    addForkSign(f.s0 + 3, f.shortX * 0.45, '近路', '#ff4d8d');
+    addForkSign(f.s0 + 3, f.longX * 0.45, '穩路', '#14c8b8');
+  }
+
+  if (tiles.length) {
+    tileMesh = makeInst(GEO.tile, toon(0xffffff), tiles.length);
+    tiles.forEach((t, i) => tileMesh.setColorAt(i, colA.set(t.color)));
+    if (tileMesh.instanceColor) tileMesh.instanceColor.needsUpdate = true;
+  } else tileMesh = null;
+
   shadowMesh = makeInst(GEO.blob, MAT.blob, runners.length + BALL_MAX);
+  updateBlocks(0);
+  updateRotors(0);
+  updateTiles(0);
+  syncBlocks();
+  syncTiles();
 }
 function layoutPad(p, i, pulse) {
   toWorld(p.s, p.x, 0.07, vD);
@@ -1080,27 +1682,39 @@ function buildWall(s) {
   worldRoot.add(g);
   return { s };
 }
+function motionAt(b, t) {
+  const o = { offX: 0, offS: 0, top: 0, tilt: 0, solid: true, hidden: false, flash: false };
+  if (b.kind === 'bob') o.top = Math.sin(t * 1.7 + b.phase) * 0.5;
+  else if (b.kind === 'wobble') {
+    o.tilt = Math.sin(t * 1.35 + b.phase) * 0.28;
+    o.offX = Math.sin(t * 1.15 + b.phase) * 0.38;
+    o.top = Math.sin(t * 1.35 + b.phase) * 0.1;
+  } else if (b.kind === 'vanish') {
+    const cyc = (t + b.phase) % 3;
+    if (cyc > 1.8) { o.solid = false; o.hidden = true; }
+    else if (cyc > 1.4) o.flash = true;
+  } else if (b.kind === 'moveX') {
+    o.offX = Math.sin(t * (b.omega || 0.9) + b.phase) * (b.amp || 1);
+  } else if (b.kind === 'moveS') {
+    o.offS = Math.sin(t * (b.omega || 0.9) + b.phase) * (b.amp || 0.7);
+  }
+  return o;
+}
 function updateBlocks(t) {
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
-    b.offX = 0; b.top = 0; b.tilt = 0; b.solid = true; b.hidden = false; b.flash = false;
-    if (b.kind === 'bob') b.top = Math.sin(t * 1.7 + b.phase) * 0.5;
-    else if (b.kind === 'wobble') {
-      b.tilt = Math.sin(t * 1.35 + b.phase) * 0.28;
-      b.offX = Math.sin(t * 1.15 + b.phase) * 0.38;
-      b.top = Math.sin(t * 1.35 + b.phase) * 0.1;
-    } else if (b.kind === 'vanish') {
-      const cyc = (t + b.phase) % 3;
-      if (cyc > 1.8) { b.solid = false; b.hidden = true; }
-      else if (cyc > 1.4) b.flash = true;
-    }
+    const o = motionAt(b, t);
+    b.offX = o.offX; b.offS = o.offS; b.top = o.top; b.tilt = o.tilt;
+    b.solid = o.solid; b.hidden = o.hidden; b.flash = o.flash;
   }
 }
 function syncBlocks() {
+  if (!blockMesh || !blocks.length) return;
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
-    toWorld(b.s, b.x + b.offX, b.top - 0.28, vD);
-    basisAt(b.s, 0, vA, vB, vC);
+    const bs = blockS(b);
+    toWorld(bs, blockX(b), b.top - 0.28, vD);
+    basisAt(bs, 0, vA, vB, vC);
     mA.makeBasis(vA, vB, vC);
     qA.setFromRotationMatrix(mA);
     qB.setFromAxisAngle(Z_AXIS, b.tilt);
@@ -1111,6 +1725,44 @@ function syncBlocks() {
   }
   blockMesh.instanceMatrix.needsUpdate = true;
   if (blockMesh.instanceColor) blockMesh.instanceColor.needsUpdate = true;
+}
+function tileMotion(tile, t) {
+  if (tile.always) return { solid: true, hidden: false, flash: false };
+  const per = tile.period || 2.5;
+  const on = tile.on || 1.9;
+  const cyc = (t + tile.phase) % per;
+  if (cyc > on) return { solid: false, hidden: true, flash: false };
+  if (cyc > on - 0.4) return { solid: true, hidden: false, flash: true };
+  return { solid: true, hidden: false, flash: false };
+}
+function updateTiles(t) {
+  for (let i = 0; i < tiles.length; i++) {
+    const tile = tiles[i];
+    const o = tileMotion(tile, t);
+    tile.solid = o.solid; tile.hidden = o.hidden; tile.flash = o.flash;
+  }
+}
+function syncTiles() {
+  if (!tileMesh || !tiles.length) return;
+  for (let i = 0; i < tiles.length; i++) {
+    const tile = tiles[i];
+    toWorld(tile.s, tile.x, tile.hidden ? -2 : 0.02, vD);
+    basisAt(tile.s, 0, vA, vB, vC);
+    mA.makeBasis(vA, vB, vC);
+    qA.setFromRotationMatrix(mA);
+    const sc = tile.hidden ? 0.001 : (tile.flash ? 1.06 : 1);
+    setInst(tileMesh, i, vD, qA, (tile.half || 1.05) * 2 * sc, 1, (tile.hs || 1.15) * 2 * sc);
+    tileMesh.setColorAt(i, colA.set(tile.flash ? 0xffffff : tile.color));
+  }
+  tileMesh.instanceMatrix.needsUpdate = true;
+  if (tileMesh.instanceColor) tileMesh.instanceColor.needsUpdate = true;
+}
+function updateRotors(t) {
+  for (let i = 0; i < rotors.length; i++) {
+    const rot = rotors[i];
+    rot.angle = t * rot.omega + rot.phase;
+    if (rot.spin) rot.spin.rotation.z = rot.angle;
+  }
 }
 function updateHammers(t) {
   for (let i = 0; i < hammers.length; i++) {
@@ -1125,26 +1777,30 @@ function updateHammers(t) {
 }
 function updateBalls(dt) {
   if (screen !== 'race') return;
+  const spec = mapDef.balls;
+  if (!spec) {
+    for (let i = 0; i < balls.length; i++) balls[i].alive = false;
+    return;
+  }
   for (let i = 0; i < balls.length; i++) {
     const b = balls[i];
     if (!b.alive) continue;
     b.s += -9 * dt;
     b.spin += dt * 2.4;
-    if (b.s < GAP1 - 4) b.alive = false;
+    if (b.s < spec.kill) b.alive = false;
   }
   let lead = -1;
   const list = activeRunners();
   for (let i = 0; i < list.length; i++) {
     const r = list[i];
     if (r.finished || r.dnf || r.respawnT > 0) continue;
-    if (r.s > 384 && r.s < trackLength - 32 && r.s > lead) lead = r.s;
+    if (r.s > spec.from && r.s < trackLength - 32 && r.s > lead) lead = r.s;
   }
   if (lead < 0) return;
   if (!ballIntro) {
     ballIntro = true;
-    // First balls sit just past checkpoint 4, inside the chase view.
-    spawnBallAt(Math.min(trackLength - 36, Math.max(lead + 14, 396)), 0);
-    spawnBallAt(Math.min(trackLength - 30, Math.max(lead + 24, 412)), -2.15);
+    spawnBallAt(Math.min(trackLength - 36, Math.max(lead + 14, spec.introA)), 0);
+    spawnBallAt(Math.min(trackLength - 30, Math.max(lead + 24, spec.introB)), spec.introX);
     ballTimer = 2.1;
     return;
   }
@@ -1166,6 +1822,9 @@ function spawnBallAt(s, x) {
   return slot;
 }
 function ensureBallsAhead(s) {
+  const spec = mapDef.balls;
+  if (!spec) return;
+  if (s < spec.from || s > trackLength - 24) return;
   let ahead = 0;
   for (let i = 0; i < balls.length; i++) {
     const b = balls[i];
@@ -1178,6 +1837,7 @@ function ensureBallsAhead(s) {
   ballTimer = 2.1;
 }
 function syncBalls() {
+  if (!ballMesh) return;
   for (let i = 0; i < balls.length; i++) {
     const b = balls[i];
     if (!b.alive) {
@@ -1197,6 +1857,7 @@ function syncBalls() {
   ballMesh.instanceMatrix.needsUpdate = true;
 }
 function syncPads(t) {
+  if (!padMesh || !pads.length) return;
   for (let i = 0; i < pads.length; i++) {
     const pulse = 1 + Math.sin(t * 6 + i) * 0.07;
     layoutPad(pads[i], i, pulse);
@@ -1210,102 +1871,180 @@ function snapOntoBlock(r) {
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
     if (!b.solid) continue;
-    const bx = b.x + b.offX;
-    const ds = b.s - r.s;
+    const bx = blockX(b);
+    const bs = blockS(b);
+    const ds = bs - r.s;
     const dx = bx - r.x;
     const d = ds * ds + dx * dx;
     if (d < bestD) { bestD = d; best = b; }
   }
   if (!best) return;
-  r.s = best.s;
-  r.x = best.x + best.offX;
+  r.s = blockS(best);
+  r.x = blockX(best);
 }
-function queryGround(s, x) {
-  if (!inGap(s)) {
+function tileCovering(s, x) {
+  let best = null;
+  for (let i = 0; i < tiles.length; i++) {
+    const tile = tiles[i];
+    if (Math.abs(tile.s - s) > (tile.hs || 1.15) + 0.02) continue;
+    if (Math.abs(tile.x - x) > (tile.half || 1.05) + 0.02) continue;
+    if (!best || (tile.solid && !best.solid)) best = tile;
+  }
+  return best;
+}
+function bandSupport(s, x) {
+  const bands = bandsAt(s);
+  if (!bands) {
     if (Math.abs(x) <= W * 0.5 + 0.08) return { h: 0, carrier: null };
     return null;
   }
-  let best = null;
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
-    if (!b.solid) continue;
-    if (Math.abs(b.s - s) > 1.8) continue;
-    const bx = b.x + b.offX;
-    if (Math.abs(s - b.s) <= b.half + 0.02 && Math.abs(x - bx) <= b.half + 0.02) {
-      if (!best || b.top > best.h) best = { h: b.top, carrier: b };
+  for (let i = 0; i < bands.length; i++) {
+    const b = bands[i];
+    if (Math.abs(x - b.x) <= b.half + 0.08) {
+      return { h: b.kind === 'short' ? 0.05 : 0, carrier: null };
     }
   }
-  return best;
+  return null;
+}
+function queryGround(s, x) {
+  if (inGap(s)) {
+    let best = null;
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      if (!b.solid) continue;
+      const bs = blockS(b);
+      if (Math.abs(bs - s) > 1.8) continue;
+      const bx = blockX(b);
+      if (Math.abs(s - bs) <= b.half + 0.02 && Math.abs(x - bx) <= b.half + 0.02) {
+        if (!best || b.top > best.h) best = { h: b.top, carrier: b };
+      }
+    }
+    return best;
+  }
+  const cover = tileCovering(s, x);
+  if (cover) {
+    if (cover.solid) return { h: cover.top, carrier: cover };
+    return null;
+  }
+  if (tileZoneAt(s)) return null;
+  return bandSupport(s, x);
 }
 
 /* =====================================================================
    RUNNER MODEL
    ===================================================================== */
-function addHat(head, type, color) {
-  const mat = toon(color);
-  if (type === 'cap') {
-    const brim = new THREE.Mesh(GEO.brim, MAT.white);
-    brim.position.y = 0.16;
-    const crown = new THREE.Mesh(GEO.cap, mat);
-    crown.position.y = 0.3;
-    head.add(brim, crown);
-  } else if (type === 'bunny') {
-    const e1 = new THREE.Mesh(GEO.ear, MAT.pink);
-    e1.position.set(-0.14, 0.5, 0.02);
-    e1.rotation.z = 0.18;
-    const e2 = e1.clone();
-    e2.position.x = 0.14;
-    e2.rotation.z = -0.18;
-    head.add(e1, e2);
-  } else if (type === 'horn') {
-    const h = new THREE.Mesh(GEO.horn, toon(0x5f8f32));
-    h.position.y = 0.46;
-    head.add(h);
-  } else if (type === 'flower') {
-    const center = new THREE.Mesh(GEO.flowerC, toon(0xffe14a));
-    center.position.y = 0.48;
-    head.add(center);
-    for (let i = 0; i < 5; i++) {
-      const p = new THREE.Mesh(GEO.petal, toon(0xff5aa8));
-      const a = (i / 5) * Math.PI * 2;
-      p.position.set(Math.cos(a) * 0.16, 0.48, Math.sin(a) * 0.16);
-      head.add(p);
-    }
-  } else if (type === 'crown') {
-    const band = new THREE.Mesh(GEO.band, toon(0xffd23a));
-    band.position.y = 0.32;
-    head.add(band);
-    for (let i = 0; i < 4; i++) {
-      const sp = new THREE.Mesh(GEO.spike, toon(0xffd23a));
-      const a = (i / 4) * Math.PI * 2;
-      sp.position.set(Math.cos(a) * 0.2, 0.48, Math.sin(a) * 0.2);
-      head.add(sp);
+function addEarPair(head, flop, len) {
+  [-1, 1].forEach((side) => {
+    const e = new THREE.Mesh(GEO.ear, MAT.pink);
+    e.position.set(side * 0.16, flop ? 0.28 : 0.46, 0.02);
+    e.rotation.z = flop ? side * -1.15 : side * -0.16;
+    e.scale.set(1, len || 1, 1);
+    const inn = new THREE.Mesh(GEO.earIn, toon(0xffd0e0));
+    inn.position.set(0, 0.05, 0.03);
+    e.add(inn);
+    head.add(e);
+  });
+}
+function addBow(head, y, sc, x) {
+  const L = new THREE.Mesh(GEO.bow, toon(0xff4d8d));
+  L.position.set((x || 0) - 0.1 * sc, y, 0.04);
+  L.scale.set(1.15 * sc, 0.72 * sc, 0.55 * sc);
+  const R = L.clone();
+  R.position.x = (x || 0) + 0.1 * sc;
+  const C = new THREE.Mesh(GEO.flowerC, toon(0xffe14a));
+  C.position.set(x || 0, y, 0.08);
+  C.scale.setScalar(0.55 * sc);
+  head.add(L, R, C);
+}
+function addHat(head, type) {
+  if (type === 'bunny') addEarPair(head, false, 1.05);
+  else if (type === 'floppy') {
+    addEarPair(head, true, 1.15);
+    addBow(head, 0.22, 0.7, 0.22);
+  } else if (type === 'bear') {
+    [-1, 1].forEach((side) => {
+      const e = new THREE.Mesh(GEO.flowerC, toon(0x5a3a28));
+      e.position.set(side * 0.3, 0.28, 0);
+      e.scale.setScalar(1.35);
+      const inn = new THREE.Mesh(GEO.earIn, toon(0xffb7c8));
+      inn.position.set(0, 0, 0.06);
+      inn.scale.setScalar(1.4);
+      e.add(inn);
+      head.add(e);
+    });
+  } else if (type === 'bow') addBow(head, 0.42, 1.35, 0);
+  else if (type === 'chick') {
+    for (let i = 0; i < 3; i++) {
+      const c = new THREE.Mesh(GEO.spike, toon(0xff4455));
+      c.position.set((i - 1) * 0.12, 0.4, 0.02);
+      c.scale.set(1, 1.15, 1);
+      head.add(c);
     }
   } else if (type === 'mushroom') {
     const cap = new THREE.Mesh(GEO.mcap, MAT.vc);
-    cap.position.y = 0.28;
-    cap.scale.set(0.55, 0.5, 0.55);
+    cap.position.y = 0.3;
+    cap.scale.set(0.62, 0.55, 0.62);
     head.add(cap);
-  } else if (type === 'tophat') {
-    const brim = new THREE.Mesh(GEO.brim, toon(0x243044));
-    brim.position.y = 0.2;
-    brim.scale.set(0.85, 1, 0.85);
-    const crown = new THREE.Mesh(GEO.topCrown, toon(0x243044));
-    crown.position.y = 0.5;
-    const band = new THREE.Mesh(GEO.hatband, toon(0x8fd0f5));
-    band.position.y = 0.32;
-    head.add(brim, crown, band);
+  } else if (type === 'beanie') {
+    const cap = new THREE.Mesh(GEO.cap, toon(0x3a78c8));
+    cap.position.y = 0.32;
+    cap.scale.set(1.25, 1.35, 1.25);
+    const band = new THREE.Mesh(GEO.hatband, toon(0xfff6ea));
+    band.position.y = 0.2;
+    band.scale.set(1.15, 1, 1.15);
+    const pom = new THREE.Mesh(GEO.hand, MAT.white);
+    pom.position.y = 0.52;
+    pom.scale.setScalar(1.15);
+    head.add(cap, band, pom);
+  } else if (type === 'cat') {
+    [-1, 1].forEach((side) => {
+      const e = new THREE.Mesh(GEO.spike, toon(0x2f8a3a));
+      e.position.set(side * 0.22, 0.36, 0);
+      e.scale.set(1.2, 1.25, 0.7);
+      e.rotation.z = side * -0.15;
+      const inn = new THREE.Mesh(GEO.earIn, MAT.pink);
+      inn.position.y = -0.02;
+      e.add(inn);
+      head.add(e);
+    });
+  }
+}
+function addHair(head, type) {
+  if (type === 'fringe') {
+    const f = new THREE.Mesh(GEO.belly, toon(0xfff6ea));
+    f.position.set(0, 0.2, 0.28);
+    f.scale.set(1.45, 0.38, 0.45);
+    head.add(f);
+  } else if (type === 'bow') addBow(head, 0.12, 0.65, 0.3);
+  else if (type === 'buns') {
+    [-1, 1].forEach((side) => {
+      const bun = new THREE.Mesh(GEO.scoop, toon(0xff8ec4));
+      bun.position.set(side * 0.32, 0.14, -0.06);
+      bun.scale.setScalar(0.85);
+      head.add(bun);
+    });
   } else if (type === 'sprout') {
     const stem = new THREE.Mesh(GEO.stem, toon(0x2f8a3a));
-    stem.position.y = 0.42;
+    stem.position.y = 0.46;
     const l1 = new THREE.Mesh(GEO.leaf, toon(0x6ad85a));
-    l1.position.set(-0.08, 0.52, 0);
+    l1.position.set(-0.08, 0.56, 0);
     l1.rotation.z = 0.9;
     const l2 = l1.clone();
     l2.position.x = 0.08;
     l2.rotation.z = -0.9;
     head.add(stem, l1, l2);
   }
+}
+function makeDizzy(x) {
+  const g = new THREE.Group();
+  g.position.set(x, 0.05, 0.36);
+  const a = new THREE.Mesh(GEO.xbar, MAT.eye);
+  a.rotation.z = 0.75;
+  const b = new THREE.Mesh(GEO.xbar, MAT.eye);
+  b.rotation.z = -0.75;
+  g.add(a, b);
+  g.visible = false;
+  return g;
 }
 function makeNameSprite(text) {
   const tex = canvasTex((g, w, h) => {
@@ -1331,30 +2070,50 @@ function buildRunners() {
     root.add(body);
     const skin = toon(def.color);
     const head = new THREE.Group();
-    head.position.y = 0.92;
+    head.position.y = 1.18;
     body.add(head);
     head.add(new THREE.Mesh(GEO.head, skin));
-    const eyeL = new THREE.Mesh(GEO.eye, MAT.eye);
-    eyeL.position.set(-0.13, 0.05, 0.34);
-    const eyeR = new THREE.Mesh(GEO.eye, MAT.eye);
-    eyeR.position.set(0.13, 0.05, 0.34);
-    head.add(eyeL, eyeR);
+    const whiteL = new THREE.Mesh(GEO.eyeWhite, MAT.white);
+    whiteL.position.set(-0.14, 0.06, 0.3);
+    const whiteR = new THREE.Mesh(GEO.eyeWhite, MAT.white);
+    whiteR.position.set(0.14, 0.06, 0.3);
+    const pupilL = new THREE.Mesh(GEO.pupil, MAT.eye);
+    pupilL.position.set(-0.14, 0.04, 0.37);
+    const pupilR = new THREE.Mesh(GEO.pupil, MAT.eye);
+    pupilR.position.set(0.14, 0.04, 0.37);
+    const glintL = new THREE.Mesh(GEO.glint, MAT.glint);
+    glintL.position.set(-0.11, 0.08, 0.4);
+    const glintR = new THREE.Mesh(GEO.glint, MAT.glint);
+    glintR.position.set(0.17, 0.08, 0.4);
+    head.add(whiteL, whiteR, pupilL, pupilR, glintL, glintR);
     const ckL = new THREE.Mesh(GEO.cheek, MAT.cheek);
-    ckL.position.set(-0.2, -0.08, 0.3);
-    ckL.scale.set(1, 0.65, 0.45);
+    ckL.position.set(-0.24, -0.08, 0.28);
+    ckL.scale.set(1.05, 0.7, 0.45);
     const ckR = new THREE.Mesh(GEO.cheek, MAT.cheek);
-    ckR.position.set(0.2, -0.08, 0.3);
-    ckR.scale.set(1, 0.65, 0.45);
-    head.add(ckL, ckR);
-    addHat(head, def.hat, def.color);
+    ckR.position.set(0.24, -0.08, 0.28);
+    ckR.scale.set(1.05, 0.7, 0.45);
+    const smile = new THREE.Mesh(GEO.smile, MAT.mouth);
+    smile.position.set(0, -0.14, 0.33);
+    const mouthO = new THREE.Mesh(GEO.mouthO, MAT.mouth);
+    mouthO.position.set(0, -0.13, 0.36);
+    mouthO.scale.set(1, 1.15, 0.55);
+    mouthO.visible = false;
+    const dizzyL = makeDizzy(-0.14);
+    const dizzyR = makeDizzy(0.14);
+    const star = new THREE.Mesh(GEO.star, MAT.marker);
+    star.position.set(0.32, 0.5, 0.05);
+    star.visible = false;
+    head.add(ckL, ckR, smile, mouthO, dizzyL, dizzyR, star);
+    addHat(head, def.hat);
+    addHair(head, def.hair);
     const torso = new THREE.Mesh(GEO.torso, skin);
-    torso.position.y = 0.58;
+    torso.position.y = 0.52;
     body.add(torso);
     const belly = new THREE.Mesh(GEO.belly, MAT.white);
-    belly.position.set(0, 0.55, 0.16);
+    belly.position.set(0, 0.48, 0.18);
     body.add(belly);
     const back = new THREE.Mesh(GEO.belly, MAT.white);
-    back.position.set(0, 0.55, -0.16);
+    back.position.set(0, 0.5, -0.16);
     body.add(back);
     function pivotLimb(geo, y, x) {
       const pivot = new THREE.Group();
@@ -1365,15 +2124,23 @@ function buildRunners() {
       body.add(pivot);
       return pivot;
     }
-    const armL = pivotLimb(GEO.arm, 0.66, -0.46);
-    const armR = pivotLimb(GEO.arm, 0.66, 0.46);
-    const legL = pivotLimb(GEO.leg, 0.42, -0.16);
-    const legR = pivotLimb(GEO.leg, 0.42, 0.16);
+    const armL = pivotLimb(GEO.arm, 0.62, -0.32);
+    const armR = pivotLimb(GEO.arm, 0.62, 0.32);
+    const legL = pivotLimb(GEO.leg, 0.34, -0.12);
+    const legR = pivotLimb(GEO.leg, 0.34, 0.12);
+    const handL = new THREE.Mesh(GEO.hand, skin);
+    handL.position.y = -0.28;
+    armL.add(handL);
+    const handR = new THREE.Mesh(GEO.hand, skin);
+    handR.position.y = -0.28;
+    armR.add(handR);
     const shoeL = new THREE.Mesh(GEO.shoe, MAT.white);
-    shoeL.position.set(0, -0.42, 0.06);
+    shoeL.position.set(0, -0.3, 0.05);
+    shoeL.scale.set(1.05, 0.75, 1.25);
     legL.add(shoeL);
     const shoeR = new THREE.Mesh(GEO.shoe, MAT.white);
-    shoeR.position.set(0, -0.42, 0.06);
+    shoeR.position.set(0, -0.3, 0.05);
+    shoeR.scale.set(1.05, 0.75, 1.25);
     legR.add(shoeR);
     const sweat = new THREE.Mesh(GEO.sweat, MAT.sweat);
     sweat.position.set(0.22, 0.12, 0.28);
@@ -1400,7 +2167,7 @@ function buildRunners() {
     let marker = null;
     if (def.player) {
       marker = new THREE.Mesh(GEO.marker, MAT.marker);
-      marker.position.y = 1.78;
+      marker.position.y = 2.05;
       marker.rotation.x = Math.PI;
       root.add(marker);
     } else {
@@ -1410,18 +2177,22 @@ function buildRunners() {
     const profile = def.player ? null : {
       speedMul: def.speedMul, reaction: def.reaction, mistakeRate: def.mistakeRate,
       dashAggression: def.dashAggression, preferredLane: def.preferredLane,
+      fork: def.fork || 'long',
     };
     const r = {
       id, name: def.name, hex: def.hex, isPlayer: !!def.player, profile, speedMul: def.speedMul,
       root, ring, spark, marker,
-      parts: { body, armL, armR, legL, legR, sweat, lines },
-      brain: { dashT: 0, dashCd: 0.3 + id * 0.2, jumped: new Set(), dropped: false, honest: 0, falls: 0, knocks: 0, carefulSec: 0 },
+      parts: {
+        body, armL, armR, legL, legR, sweat, lines,
+        smile, mouthO, pupilL, pupilR, glintL, glintR, whiteL, whiteR, dizzyL, dizzyR, star,
+      },
+      brain: { dashT: 0, dashCd: 0.3 + id * 0.2, jumped: new Set(), dropped: false, honest: 0, falls: 0, knocks: 0, carefulSec: 0, forkAt: -1, forkChoice: null, forkFalls: 0 },
       s: 0, x: 0, y: 0, vs: 0, vx: 0, vy: 0,
       grounded: true, jumpsUsed: 0, dashGauge: 1,
       exhaustedT: 0, knockT: 0, boostT: 0, landDashT: 0, respawnT: 0,
       dashBuffer: 0, sinceLand: 1, boostCd: 0, springCd: 0,
       finished: false, finishTime: null, dnf: false, checkpointIndex: 0,
-      phase: id, flipT: 0, ringT: 0, carrier: null, carryOff: 0,
+      phase: id, flipT: 0, ringT: 0, carrier: null, carryOff: 0, carryOffX: 0, carryOffS: 0, squashT: 0,
       steer: 0, dashHeld: false, jumpEdge: false, dashEdge: false, rank: id + 1,
     };
     runners.push(r);
@@ -1438,7 +2209,8 @@ function resetRunner(r, s, x, air) {
   r.dashBuffer = 0; r.sinceLand = 1; r.boostCd = 0; r.springCd = 0;
   r.finished = false; r.finishTime = null; r.dnf = false;
   r.checkpointIndex = 0; r.phase = r.id; r.flipT = 0; r.ringT = 0;
-  r.carrier = null; r.carryOff = 0; r.steer = 0; r.dashHeld = false; r.jumpEdge = false; r.dashEdge = false;
+  r.carrier = null; r.carryOff = 0; r.carryOffX = 0; r.carryOffS = 0; r.squashT = 0;
+  r.steer = 0; r.dashHeld = false; r.jumpEdge = false; r.dashEdge = false;
   r.rank = r.id + 1;
   r.brain.dashT = 0;
   r.brain.dashCd = 0.4 + r.id * 0.15;
@@ -1448,6 +2220,9 @@ function resetRunner(r, s, x, air) {
   r.brain.falls = 0;
   r.brain.knocks = 0;
   r.brain.carefulSec = 0;
+  r.brain.forkAt = -1;
+  r.brain.forkChoice = null;
+  r.brain.forkFalls = 0;
   r.brain.fallLog = [];
   r.brain.knockLog = [];
   r.brain.missed = {};
@@ -1550,13 +2325,54 @@ function applyPose(r, kind) {
     }
   }
 }
+function applyFace(r, kind) {
+  const p = r.parts;
+  if (!p.smile) return;
+  const excited = r.boostT > 0 || r.landDashT > 0 || (r.dashHeld && r.dashGauge > 0 && r.exhaustedT <= 0);
+  const dizzy = kind === 'knock';
+  p.smile.visible = !dizzy && !excited;
+  p.mouthO.visible = !dizzy && excited;
+  p.pupilL.visible = !dizzy;
+  p.pupilR.visible = !dizzy;
+  p.glintL.visible = !dizzy;
+  p.glintR.visible = !dizzy;
+  p.whiteL.visible = !dizzy;
+  p.whiteR.visible = !dizzy;
+  p.dizzyL.visible = dizzy;
+  p.dizzyR.visible = dizzy;
+  p.star.visible = dizzy;
+  if (dizzy) {
+    const t = worldT + menuT + resultsT;
+    p.star.rotation.z = t * 9;
+    p.star.rotation.y = t * 4;
+  }
+}
+function applySquash(r, kind) {
+  const b = r.parts.body;
+  b.scale.set(1, 1, 1);
+  if (kind === 'knock') return;
+  if (kind === 'air') {
+    if (r.vy > 1) b.scale.set(0.9, 1.14, 0.9);
+    else if (r.vy < -1) b.scale.set(1.08, 0.86, 1.08);
+    return;
+  }
+  if (kind === 'run' || kind === 'tired') {
+    const s = 1 + Math.sin(r.phase * 2) * (kind === 'tired' ? 0.03 : 0.07);
+    const xz = 1 / Math.sqrt(Math.max(0.55, s));
+    b.scale.set(xz, s, xz);
+  }
+  if (r.squashT > 0) {
+    const u = clamp(r.squashT / 0.16, 0, 1);
+    b.scale.set(1 + 0.14 * u, 1 - 0.2 * u, 1 + 0.14 * u);
+  }
+}
 function syncRunners(dt) {
   const list = runners;
   const soloHide = mode === 'solo' && screen !== 'menu';
   const podiumMode = screen === 'results' && mode === 'vs';
   for (let i = 0; i < list.length; i++) {
     const r = list[i];
-    if (soloHide && !r.isPlayer) { r.root.visible = false; continue; }
+    if (soloHide && !r.isPlayer && closeupId !== r.id) { r.root.visible = false; continue; }
     if (!podiumMode) {
       const yaw = clamp(r.vx * 0.055, -0.4, 0.4);
       toWorld(r.s, r.x, r.y, r.root.position);
@@ -1566,9 +2382,12 @@ function syncRunners(dt) {
     }
     if (r.respawnT > 0) r.root.visible = Math.sin((worldT + menuT) * 28) > -0.15;
     else r.root.visible = true;
-    applyPose(r, poseOf(r));
+    const pose = poseOf(r);
+    applyPose(r, pose);
+    applySquash(r, pose);
+    applyFace(r, pose);
     if (r.marker) {
-      r.marker.position.y = 1.72 + Math.sin((worldT + menuT) * 4) * 0.08;
+      r.marker.position.y = 2.05 + Math.sin((worldT + menuT) * 4) * 0.08;
       r.marker.visible = screen !== 'results';
     }
     const tag = r.root.children.find((c) => c.isSprite);
@@ -1579,7 +2398,7 @@ function syncRunners(dt) {
       } else {
         const ds = player ? r.s - player.s : 8;
         tag.visible = ds > -0.5 && ds < 24;
-        tag.position.y = 1.85;
+        tag.position.y = 2.15;
       }
     }
     if (r.ringT > 0) {
@@ -1660,6 +2479,7 @@ function onLand(r) {
   r.jumpsUsed = 0;
   r.sinceLand = 0;
   r.flipT = 0;
+  r.squashT = 0.16;
   const buffered = r.dashBuffer > 0;
   r.dashBuffer = 0;
   if (r.knockT > 0 || r.respawnT > 0 || r.finished) return;
@@ -1716,7 +2536,7 @@ function doRespawn(r) {
     if (!r.isPlayer) r.brain.carefulSec = sectionAt(r.s);
     r.brain.jumped.clear();
   }
-  const cp = CP_S[r.checkpointIndex] || 0;
+  const cp = checkpoints[r.checkpointIndex] || 0;
   let s = cp + 2.2 + (r.id % 3) * 0.7;
   if (s > trackLength - 8) s = cp;
   r.s = s;
@@ -1729,18 +2549,76 @@ function doRespawn(r) {
   r.respawnT = 2;
   r.landDashT = 0;
   r.boostT = 0;
-  r.carrier = null; r.carryOff = 0;
+  r.carrier = null; r.carryOff = 0; r.carryOffX = 0; r.carryOffS = 0;
+  if (r.brain) { r.brain.forkAt = -1; r.brain.forkChoice = null; }
   if (r.isPlayer) { toast('跌落！+2 秒'); sfx('respawn'); }
+}
+function looseLane(s) {
+  return inGap(s) || !!narrowAt(s) || !!forkAt(s) || !!tileZoneAt(s);
 }
 function clampLane(r) {
   if (r.finished || r.dnf) return;
-  if (!inGap(r.s)) {
+  if (!looseLane(r.s)) {
     const lim = W * 0.5 - 0.4;
     if (r.x > lim) { r.x = lim; if (r.vx > 0) r.vx = 0; }
     if (r.x < -lim) { r.x = -lim; if (r.vx < 0) r.vx = 0; }
   } else {
     if (r.x > 8) { r.x = 8; r.vx = 0; }
     if (r.x < -8) { r.x = -8; r.vx = 0; }
+  }
+}
+function forkChoiceOf(r, f) {
+  const prof = profileOf(r);
+  let kind = 'long';
+  const falls = r.brain ? (r.brain.falls || 0) : 0;
+  if (prof && prof.fork === 'short' && falls < 1) kind = 'short';
+  if (r.brain) {
+    if (r.brain.forkAt === f.s0 && r.brain.forkChoice && r.brain.forkFalls === falls) return r.brain.forkChoice;
+    r.brain.forkAt = f.s0;
+    r.brain.forkChoice = kind;
+    r.brain.forkFalls = falls;
+  }
+  return kind;
+}
+function railOne(r) {
+  if (r.finished || r.dnf || r.respawnT > 0) return;
+  const ai = !r.isPlayer || autopilot;
+  if (!ai) return;
+  const nar = narrowAt(r.s);
+  if (nar) {
+    const lim = Math.max(0.05, narrowHalfAt(nar, r.s) - 0.12);
+    const cx = nar.x || 0;
+    if (r.x > cx + lim) { r.x = cx + lim; if (r.vx > 0) r.vx = 0; }
+    if (r.x < cx - lim) { r.x = cx - lim; if (r.vx < 0) r.vx = 0; }
+  }
+  const f = forkAt(r.s);
+  if (f) {
+    const band = forkBandGeom(f, r.s, forkChoiceOf(r, f));
+    if (band) {
+      const lim = Math.max(0.08, band.half - 0.12);
+      if (r.x > band.x + lim) { r.x = band.x + lim; if (r.vx > 0) r.vx *= 0.2; }
+      if (r.x < band.x - lim) { r.x = band.x - lim; if (r.vx < 0) r.vx *= 0.2; }
+    }
+  }
+}
+function railRunners() {
+  const list = activeRunners();
+  for (let i = 0; i < list.length; i++) railOne(list[i]);
+}
+function applyForkWarp(r) {
+  const f = forkAt(r.s);
+  if (!f) return;
+  if (r.s < f.sShortExit - 1.2 || r.s > f.sShortExit + 0.35) return;
+  const sh = forkBandGeom(f, Math.min(r.s, f.sShortExit - 0.05), 'short');
+  if (!sh) return;
+  if (Math.abs(r.x - sh.x) <= sh.half + 0.25) {
+    r.s = f.sMerge + 0.4;
+    r.x = 0;
+    r.vx = 0;
+    r.carrier = null;
+    r.carryOff = 0;
+    r.carryOffX = 0;
+    r.carryOffS = 0;
   }
 }
 function stepRunner(r, dt) {
@@ -1772,6 +2650,7 @@ function stepRunner(r, dt) {
   if (r.dashBuffer > 0) r.dashBuffer -= dt;
   if (r.boostCd > 0) r.boostCd -= dt;
   if (r.springCd > 0) r.springCd -= dt;
+  if (r.squashT > 0) r.squashT -= dt;
   r.sinceLand += dt;
 
   if (dashE) {
@@ -1806,9 +2685,13 @@ function stepRunner(r, dt) {
   else if (r.landDashT > 0) target = 12.5;
   else if (dashing) target = 11.5;
   // Mild catch-up for AI well behind the leader. Never applied to the player.
-  if (racing && target > 0 && !r.isPlayer && packLeadS - r.s > 25) {
-    const u = clamp((packLeadS - r.s - 25) / 50, 0, 1);
-    target *= 1.03 + 0.03 * u;
+  // Keep the pack inside the 10s finish window. Never applied to the player.
+  if (racing && target > 0 && !r.isPlayer && packLeadS - r.s > 15) {
+    const u = clamp((packLeadS - r.s - 15) / 70, 0, 1);
+    let mul = 1.1 + 0.05 * u;
+    const hazardRoad = inGap(r.s) || !!narrowAt(r.s) || !!forkAt(r.s) || !!tileZoneAt(r.s);
+    if (!hazardRoad && packLeadS - r.s > 40) mul += mapDef.id === 'snow' ? 0.1 : 0.04;
+    target *= mul;
   }
   r.vs += clamp(target - r.vs, -12 * dt, 12 * dt);
   if (r.vs < 0) r.vs = 0;
@@ -1822,17 +2705,25 @@ function stepRunner(r, dt) {
   r.x += r.vx * dt;
   if (r.s < 0) { r.s = 0; r.vs = 0; }
   clampLane(r);
+  railOne(r);
 
   const prevY = r.y;
   if (r.grounded && r.carrier) {
-    r.x += r.carrier.offX - r.carryOff;
-    r.carryOff = r.carrier.offX;
+    const ox = r.carrier.offX || 0;
+    const os = r.carrier.offS || 0;
+    r.x += ox - (r.carryOffX || 0);
+    r.s += os - (r.carryOffS || 0);
+    r.carryOff = ox;
+    r.carryOffX = ox;
+    r.carryOffS = os;
   }
   if (r.grounded) {
     const g = queryGround(r.s, r.x);
     if (g && Math.abs(r.y - g.h) < 1.6) {
       r.y = g.h; r.vy = 0; r.carrier = g.carrier;
-      r.carryOff = g.carrier ? g.carrier.offX : 0;
+      r.carryOff = g.carrier ? (g.carrier.offX || 0) : 0;
+      r.carryOffX = r.carryOff;
+      r.carryOffS = g.carrier ? (g.carrier.offS || 0) : 0;
     } else {
       r.grounded = false; r.carrier = null;
     }
@@ -1844,12 +2735,15 @@ function stepRunner(r, dt) {
     const g = queryGround(r.s, r.x);
     if (g && prevY >= g.h - 0.25 && r.y <= g.h + 0.08 && r.vy <= 0.02) {
       r.y = g.h; r.vy = 0; r.grounded = true; r.carrier = g.carrier;
-      r.carryOff = g.carrier ? g.carrier.offX : 0;
+      r.carryOff = g.carrier ? (g.carrier.offX || 0) : 0;
+      r.carryOffX = r.carryOff;
+      r.carryOffS = g.carrier ? (g.carrier.offS || 0) : 0;
       onLand(r);
     }
   }
   if (r.grounded && r.knockT <= 0 && r.vs > 0.3) r.phase += dt * (7 + r.vs * 1.15);
 
+  applyForkWarp(r);
   if (r.y < -6) doRespawn(r);
   if (racing && !r.finished && r.s >= trackLength) {
     r.finished = true;
@@ -1864,6 +2758,9 @@ function collideRunners() {
     for (let j = i + 1; j < list.length; j++) {
       const a = list[i], b = list[j];
       if (a.respawnT > 0 || b.respawnT > 0 || a.dnf || b.dnf) continue;
+      // A stunned runner is not a wall. An idle player bouncing on a hurdle
+      // must not pin the rest of the pack in place.
+      if (a.knockT > 0 || b.knockT > 0) continue;
       const ds = b.s - a.s;
       const dx = b.x - a.x;
       const dist = Math.hypot(ds, dx) || 0.0001;
@@ -1893,20 +2790,35 @@ function collideRunners() {
     }
   }
 }
+function gapNear(s) {
+  let best = null;
+  let bestD = 1e9;
+  for (let i = 0; i < gaps.length; i++) {
+    const g = gaps[i];
+    let d = 0;
+    if (s < g.s0) d = g.s0 - s;
+    else if (s > g.s1) d = s - g.s1;
+    if (d < bestD) { bestD = d; best = g; }
+  }
+  return best;
+}
 function supportFar(r) {
-  if (r.s <= GAP0) return GAP0;
-  if (r.s >= GAP1) return trackLength;
+  const g = gapNear(r.s);
+  if (!g) return trackLength;
+  if (r.s <= g.s0) return g.s0;
+  if (r.s >= g.s1) return trackLength;
   let edge = r.s;
-  if (r.carrier && r.carrier.solid !== false) edge = Math.max(edge, r.carrier.s + r.carrier.half);
+  if (r.carrier && r.carrier.solid !== false && r.carrier.half) edge = Math.max(edge, blockS(r.carrier) + r.carrier.half);
   for (let n = 0; n < 8; n++) {
     let next = edge;
     for (let i = 0; i < blocks.length; i++) {
       const b = blocks[i];
       if (!b.solid) continue;
-      const bx = b.x + b.offX;
+      const bx = blockX(b);
       if (Math.abs(bx - r.x) > b.half + 0.08) continue;
-      const near = b.s - b.half;
-      const far = b.s + b.half;
+      const bs = blockS(b);
+      const near = bs - b.half;
+      const far = bs + b.half;
       if (near <= edge + 0.4 && far > next) next = far;
     }
     if (next <= edge + 0.02) break;
@@ -1966,6 +2878,22 @@ function hazards() {
         }
       }
     }
+    if (r.knockT <= 0) {
+      for (let i = 0; i < rotors.length; i++) {
+        const rot = rotors[i];
+        if (Math.abs(r.s - rot.s) > 0.55) continue;
+        const th = rot.angle;
+        const px = r.x - rot.x;
+        const py = (r.y + 0.72) - rot.pivotY;
+        const dist = px * Math.sin(th) + py * Math.cos(th);
+        const along = -px * Math.cos(th) + py * Math.sin(th);
+        if (Math.abs(dist) < 0.36 && Math.abs(along) < rot.halfLen + 0.05) {
+          knock(r, Math.sign(px) || 1, 'rotor');
+          r.s = rot.s - 3.2;
+          break;
+        }
+      }
+    }
     if (r.grounded && r.boostCd <= 0 && r.knockT <= 0) {
       for (let i = 0; i < pads.length; i++) {
         const p = pads[i];
@@ -1995,8 +2923,8 @@ function hazards() {
         }
       }
     }
-    for (let i = r.checkpointIndex + 1; i < CP_S.length; i++) {
-      if (r.s >= CP_S[i]) {
+    for (let i = r.checkpointIndex + 1; i < checkpoints.length; i++) {
+      if (r.s >= checkpoints[i]) {
         r.checkpointIndex = i;
         if (r.isPlayer) { toast('檢查點'); sfx('cp'); }
       }
@@ -2035,6 +2963,81 @@ function computeRanks() {
 /* =====================================================================
    AI
    ===================================================================== */
+function thinkMovingGap(r, g0, g1, setT, prof) {
+  const far = supportFar(r);
+  const distEdge = far - r.s;
+  const lanes = [-2.15, 0, 2.15];
+  const pred = (b) => motionAt(b, worldT + Math.max(0, (b.s - r.s) / Math.max(4.5, r.vs)));
+  const covered = (s, x) => {
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      const o = pred(b);
+      if (!o.solid) continue;
+      if (Math.abs(b.s + o.offS - s) <= b.half && Math.abs(b.x + o.offX - x) <= b.half) return true;
+    }
+    return false;
+  };
+  const hereFull = lanes.every((x) => covered(r.s + 0.2, x));
+  let aim = null;
+  let aimScore = 1e9;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const o = pred(b);
+    if (!o.solid) continue;
+    const near = b.s + o.offS - b.half;
+    if (near < far + 0.35 || near > far + 3.6) continue;
+    const bx = b.x + o.offX;
+    const reach = hereFull ? 4 : 2.4;
+    if (Math.abs(bx - r.x) > reach) continue;
+    let score = Math.abs(bx - r.x);
+    if (o.flash || b.kind === 'vanish') score += 3;
+    if (b.kind === 'moveX') score += 0.35;
+    if (score < aimScore) { aimScore = score; aim = bx; }
+  }
+  const hangS = r.s + Math.max(2.4, r.vs * 0.5);
+  const landT = worldT + Math.max(0.2, (hangS - r.s) / Math.max(4.5, r.vs));
+  const landOk = (x) => {
+    if ((hangS <= g0 + 0.15 || hangS >= g1 - 0.2) && Math.abs(x) <= 3.05) return true;
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      const o = motionAt(b, landT);
+      if (!o.solid || o.flash) continue;
+      if (Math.abs(b.s + o.offS - hangS) > b.half + 0.15) continue;
+      if (Math.abs(b.x + o.offX - x) <= b.half) return true;
+    }
+    return false;
+  };
+  if (aim == null || !landOk(aim)) {
+    const lanes2 = [-2.15, 0, 2.15];
+    let bestX = null;
+    let bestD = 1e9;
+    for (let li = 0; li < lanes2.length; li++) {
+      if (!landOk(lanes2[li])) continue;
+      const d = Math.abs(lanes2[li] - r.x);
+      if (d < bestD) { bestD = d; bestX = lanes2[li]; }
+    }
+    if (bestX != null) aim = bestX;
+  }
+  const falls = r.brain.falls || 0;
+  const edge = Math.floor(far);
+  if (!r.brain.missed) r.brain.missed = {};
+  const depth = clamp((far - g0) / Math.max(1, g1 - g0), 0, 1);
+  const gapP = (falls >= 1 || depth > 0.35) ? 0 : aiMistakeRate(r) * 0.35;
+  const mistake = hash01(r.id + 9 + falls * 19 + (r.brain.honest || 0), edge) < gapP;
+  if (mistake) r.brain.missed[edge] = 1;
+  if (aim == null && r.s > g1 - 16) aim = 0;
+  if (aim == null) aim = r.x;
+  const key = Math.floor(far);
+  if (distEdge > 3.2) r.brain.jumped.delete(key);
+  const maxEdge = Math.min(2.15, Math.max(1.0, r.vs * 0.5 - 0.7));
+  const inWindow = distEdge < maxEdge && distEdge > 0.2;
+  const hopKey = key + 10000;
+  const lateHop = distEdge < 0.75 && distEdge > 0.1 && !mistake && !r.brain.jumped.has(hopKey) && landOk(aim);
+  const jump = !mistake && landOk(aim) && ((inWindow && !r.brain.jumped.has(key)) || lateHop);
+  if (inWindow && landOk(aim)) r.brain.jumped.add(key);
+  if (lateHop) r.brain.jumped.add(hopKey);
+  setT(6, aim, jump);
+}
 function aiMistakeRate(r) {
   let m = r.profile ? r.profile.mistakeRate : 0;
   if (r.brain && r.brain.carefulSec === sectionAt(r.s)) m *= 0.5;
@@ -2068,6 +3071,9 @@ function thinkAI(r, dt) {
       setT(2, r.x + (r.x >= o.x ? 1.25 : -1.25), false);
     }
   }
+  const gAp = gaps.length ? gaps[0] : null;
+  const GAP0 = gAp ? gAp.s0 : 1e9;
+  const GAP1 = gAp ? gAp.s1 : -1;
   // hurdles
   if (r.s > 118 && r.s < GAP0 - 6) {
     for (let i = 0; i < hurdleRows.length; i++) {
@@ -2090,6 +3096,10 @@ function thinkAI(r, dt) {
       } else {
         const ideal = Math.max(2.15, r.vs * 0.4);
         let trigger = ideal - prof.reaction * r.vs * 0.85;
+        // Stay near the top of the jump as the bar passes. A big reaction
+        // used to drop the trigger so far that slow runners landed on the bar.
+        const hang = Math.max(2.05, r.vs * 0.32);
+        if (trigger < hang) trigger = hang;
         if (hash01(r.id + 3 + (r.brain.honest || 0), row.s) < aiMistakeRate(r)) trigger *= 0.28;
         if (ds < trigger && !r.brain.jumped.has(row.s)) {
           wantJump = true;
@@ -2101,7 +3111,9 @@ function thinkAI(r, dt) {
     }
   }
   // blocks: steer onto a lane, jump near the lip of the current deck
-  if (r.s > GAP0 - 18 && r.s < GAP1 + 2) {
+  if (mapDef.blockStyle !== 'forest' && gAp && r.s > GAP0 - 18 && r.s < GAP1 + 2) {
+    thinkMovingGap(r, GAP0, GAP1, setT, prof);
+  } else if (r.s > GAP0 - 18 && r.s < GAP1 + 2) {
     const far = supportFar(r);
     const distEdge = far - r.s;
     const lanes = [-2.15, 0, 2.15];
@@ -2151,6 +3163,100 @@ function thinkAI(r, dt) {
       if (lateHop) r.brain.jumped.add(hopKey);
       setT(6, aim, jump);
     }
+  }
+  let tileLook = false;
+  for (let i = 0; i < tileZones.length; i++) {
+    const z = tileZones[i];
+    if (r.s > z.s0 - 12 && r.s < z.s1 + 1) tileLook = true;
+  }
+  if (tileLook) {
+    const lanes = [-2.2, 0, 2.2];
+    let bestLane = r.x;
+    let bestScore = 1e9;
+    for (let li = 0; li < lanes.length; li++) {
+      const lane = lanes[li];
+      let score = Math.abs(lane - r.x) * 0.35;
+      for (let ti = 0; ti < tiles.length; ti++) {
+        const tile = tiles[ti];
+        if (!tile.zone) continue;
+        const ds = tile.s - r.s;
+        if (ds < -0.8 || ds > 9) continue;
+        if (Math.abs(tile.x - lane) > (tile.half || 1) + 0.05) continue;
+        const fut = tileMotion(tile, worldT + ds / Math.max(4.5, r.vs));
+        if (!fut.solid) score += 30;
+        else if (fut.flash) score += 6;
+      }
+      if (score < bestScore) { bestScore = score; bestLane = lane; }
+    }
+    let jump = false;
+    for (let ti = 0; ti < tiles.length; ti++) {
+      const tile = tiles[ti];
+      const ds = tile.s - r.s;
+      if (ds < -0.2 || ds > 2.8) continue;
+      if (Math.abs(tile.x - r.x) > (tile.half || 1) + 0.15) continue;
+      const fut = tileMotion(tile, worldT + Math.max(0, ds) / Math.max(4.5, r.vs));
+      if (fut.flash || !fut.solid) {
+        const key = 200000 + ti;
+        if (!r.brain.jumped.has(key)) { r.brain.jumped.add(key); jump = true; }
+      }
+    }
+    setT(7, bestLane, jump);
+  }
+  for (let fi = 0; fi < forks.length; fi++) {
+    const f = forks[fi];
+    if (r.s < f.s0 - 14 || r.s >= f.sMerge) continue;
+    const kind = forkChoiceOf(r, f);
+    const lookS = clamp(Math.max(r.s, f.s0 + 0.4), f.s0, f.sMerge - 0.3);
+    let band = forkBandGeom(f, lookS, kind);
+    if (!band) band = forkBandGeom(f, Math.min(f.s0 + (f.diverge || 18), (kind === 'short' ? f.sShortExit : f.sMerge) - 0.3), kind);
+    if (band) setT(7, band.x, false);
+  }
+  let rotorNear = false;
+  for (let i = 0; i < rotors.length; i++) {
+    const rot = rotors[i];
+    const ds = rot.s - r.s;
+    if (ds > -1 && ds < 8) rotorNear = true;
+    if (ds < 0.2 || ds > 14) continue;
+    if (rot.short) {
+      let f = null;
+      for (let k = 0; k < forks.length; k++) {
+        if (r.s > forks[k].s0 - 16 && r.s < forks[k].sMerge) f = forks[k];
+      }
+      if (!f || forkChoiceOf(r, f) !== 'short') continue;
+    }
+    const tArr = ds / Math.max(5, r.vs);
+    const ang = (worldT + tArr) * rot.omega + rot.phase;
+    const dangerous = Math.abs(Math.cos(ang)) > 0.55;
+    const key = 300000 + Math.round(rot.s * 10);
+    if (ds > 6) r.brain.jumped.delete(key);
+    if (dangerous) {
+      const trigger = Math.max(2.1, r.vs * 0.32);
+      if (ds < trigger && r.vs > 5.2 && !r.brain.jumped.has(key)) {
+        r.brain.jumped.add(key);
+        setT(8, rot.x, true);
+      } else setT(8, rot.x, false);
+    } else {
+      const side = (r.id % 2 === 0 ? 0.74 : -0.74);
+      setT(8, rot.x + side, false);
+    }
+  }
+  if (!rotorNear) {
+    let nar = null;
+    for (let i = 0; i < narrows.length; i++) {
+      const n = narrows[i];
+      if (r.s >= n.s0 - 18 && r.s <= n.s1) nar = n;
+    }
+    // A hurdle still ahead of the bridge outranks the early center-line.
+    // Otherwise the bridge aim pulls a runner out of a side gap and into the bar.
+    let hurdleBefore = false;
+    if (nar) {
+      for (let i = 0; i < hurdleRows.length; i++) {
+        const row = hurdleRows[i];
+        const ds = row.s - r.s;
+        if (ds > 0.15 && ds < 16 && row.s < nar.s0 + 0.5) hurdleBefore = true;
+      }
+    }
+    if (nar && !hurdleBefore) setT(9, nar.x || 0, false);
   }
   // hammers — latch a side so the swing doesn't make them weave into the head
   for (let i = 0; i < hammers.length; i++) {
@@ -2217,7 +3323,29 @@ function thinkAI(r, dt) {
   // dash on straights
   const sec = sectionAt(r.s);
   const ballClose = balls.some((b) => b.alive && b.s > r.s && b.s - r.s < 16 && Math.abs(b.x - r.x) < 2);
-  const safe = (sec === 1 && r.s > 18) || (sec === 4 && !ballClose && r.s < trackLength - 28) || (sec === 4 && r.s > trackLength - 16);
+  let safe = (sec === 1 && r.s > 18) || (sec === 4 && !ballClose && r.s < trackLength - 28) || (sec === 4 && r.s > trackLength - 16);
+  if (mapDef.id !== 'forest') {
+    let hazard = inGap(r.s) || !!narrowAt(r.s) || !!forkAt(r.s) || !!tileZoneAt(r.s) || ballClose;
+    if (!hazard) {
+      for (let i = 0; i < hurdleRows.length; i++) {
+        const ds = hurdleRows[i].s - r.s;
+        if (ds > 0 && ds < 14) hazard = true;
+      }
+    }
+    if (!hazard) {
+      for (let i = 0; i < rotors.length; i++) {
+        const ds = rotors[i].s - r.s;
+        if (ds > -1 && ds < 14) hazard = true;
+      }
+    }
+    if (!hazard) {
+      for (let i = 0; i < hammers.length; i++) {
+        const ds = hammers[i].s - r.s;
+        if (ds > 0 && ds < 14) hazard = true;
+      }
+    }
+    safe = r.s > 18 && !hazard && r.s < trackLength - 18;
+  }
   if (r.brain.dashT > 0) {
     r.brain.dashT -= dt;
     r.dashHeld = true;
@@ -2236,6 +3364,27 @@ function thinkAI(r, dt) {
    ===================================================================== */
 function updateCamera(dt) {
   if (!camera) return;
+  if (closeupId != null && runners[closeupId]) {
+    const r = runners[closeupId];
+    const portraitCU = (camera.aspect || 1) < 1;
+    if (screen === 'results' && mode === 'vs') {
+      const yaw = r.root.rotation.y;
+      vC.copy(r.root.position);
+      vA.set(vC.x + Math.sin(yaw) * 2.35, vC.y + 1.22, vC.z + Math.cos(yaw) * 2.35);
+      vD.set(vC.x, vC.y + 1.15, vC.z);
+    } else {
+      toWorld(r.s, r.x, r.y + 1.15, vC);
+      const o = sampleInto(r.s, S1);
+      vA.set(vC.x + o.tx * 2.45 + o.rx * 0.12, vC.y + 0.18, vC.z + o.tz * 2.45 + o.rz * 0.12);
+      vD.set(vC.x, vC.y, vC.z);
+    }
+    camera.position.copy(vA);
+    camera.lookAt(vD);
+    camera.fov = portraitCU ? 34 : 30;
+    camera.updateProjectionMatrix();
+    camSnap = false;
+    return;
+  }
   const aspect = camera.aspect || 1;
   const portrait = aspect < 1;
   let targetFov = portrait ? 76 : 65;
@@ -2279,7 +3428,12 @@ function updateCamera(dt) {
   }
   if (!player) return;
   const follow = (screen === 'countdown' && player.y > 2.2) ? 0.85 : 0.5;
-  const blocksCam = player.s > GAP0 - 10 && player.s < GAP1 + 8;
+  let blocksCam = false;
+  for (let gi = 0; gi < gaps.length; gi++) {
+    const g = gaps[gi];
+    const tail = mapDef.blockStyle === 'forest' ? 8 : 10;
+    if (player.s > g.s0 - 10 && player.s < g.s1 + tail) blocksCam = true;
+  }
   let back;
   let upH;
   let ahead;
@@ -2304,6 +3458,7 @@ function updateCamera(dt) {
     vB.x += o.tx; vB.y += o.ty; vB.z += o.tz;
   }
   vB.multiplyScalar(0.2);
+  if (mapDef.id !== 'forest') vB.y *= 0.4;
   if (vB.lengthSq() < 1e-6) vB.set(0, 0, 1);
   else vB.normalize();
   if (camSnap) camFwd.copy(vB);
@@ -2359,21 +3514,30 @@ function drawPortrait() {
   const c = $('portrait');
   const g = c.getContext('2d');
   g.clearRect(0, 0, 128, 128);
+  g.fillStyle = '#ffb7c8';
+  g.beginPath(); g.ellipse(46, 28, 8, 22, -0.15, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(82, 28, 8, 22, 0.15, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffd0e0';
+  g.beginPath(); g.ellipse(46, 30, 4, 12, -0.15, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(82, 30, 4, 12, 0.15, 0, Math.PI * 2); g.fill();
   g.fillStyle = '#e23b3b';
-  g.beginPath(); g.arc(64, 70, 46, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#c81e3a';
-  g.fillRect(22, 28, 84, 22);
+  g.beginPath(); g.arc(64, 74, 40, 0, Math.PI * 2); g.fill();
   g.fillStyle = '#fff';
-  g.fillRect(18, 46, 92, 8);
-  g.fillStyle = '#fff';
-  g.beginPath(); g.arc(48, 72, 8, 0, 7); g.fill();
-  g.beginPath(); g.arc(80, 72, 8, 0, 7); g.fill();
+  g.beginPath(); g.arc(50, 70, 12, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(80, 70, 12, 0, Math.PI * 2); g.fill();
   g.fillStyle = '#1a1a1a';
-  g.beginPath(); g.arc(48, 73, 4, 0, 7); g.fill();
-  g.beginPath(); g.arc(80, 73, 4, 0, 7); g.fill();
-  g.fillStyle = '#ffb3c7';
-  g.beginPath(); g.arc(34, 88, 7, 0, 7); g.fill();
-  g.beginPath(); g.arc(94, 88, 7, 0, 7); g.fill();
+  g.beginPath(); g.arc(52, 72, 6, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(82, 72, 6, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff';
+  g.beginPath(); g.arc(49, 68, 2.4, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(79, 68, 2.4, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ff9bb8';
+  g.beginPath(); g.arc(36, 86, 7, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(92, 86, 7, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#5a2840';
+  g.lineWidth = 3;
+  g.lineCap = 'round';
+  g.beginPath(); g.arc(64, 90, 10, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
 }
 function buildHUD() {
   drawPortrait();
@@ -2390,12 +3554,6 @@ function buildHUD() {
     return { row, dot, name };
   });
   const bar = $('bar');
-  CP_S.forEach((s) => {
-    const t = document.createElement('i');
-    t.className = 'tick';
-    t.dataset.s = String(s);
-    bar.appendChild(t);
-  });
   iconEls = runners.map((r) => {
     const d = document.createElement('div');
     d.className = 'picon' + (r.isPlayer ? ' me' : '');
@@ -2409,7 +3567,34 @@ function buildHUD() {
     bar.appendChild(d);
     return d;
   });
+  refreshTicks();
 }
+function refreshTicks() {
+  const bar = $('bar');
+  if (!bar) return;
+  const old = bar.querySelectorAll('.tick');
+  for (let i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+  for (let i = 0; i < checkpoints.length; i++) {
+    const t = document.createElement('i');
+    t.className = 'tick';
+    t.dataset.s = String(checkpoints[i]);
+    bar.insertBefore(t, bar.firstChild);
+  }
+}
+function starsText(d) {
+  let s = '';
+  for (let i = 1; i <= 3; i++) s += i <= d ? '★' : '☆';
+  return s;
+}
+function refreshMapCard() {
+  const card = $('map-card');
+  if (!card) return;
+  $('map-name').textContent = mapDef.name;
+  $('map-stars').textContent = starsText(mapDef.difficulty);
+  $('map-level').textContent = LEVEL_NAME[mapDef.difficulty] || '';
+  card.style.setProperty('--map-color', mapDef.ui);
+}
+function bestKey() { return 'talesdash3d_best_' + mapDef.id; }
 function toast(text) {
   const now = performance.now();
   if (text === toastStamp && now - toastAt < 450) return;
@@ -2428,18 +3613,20 @@ function flashVignette() {
 }
 function updateBestLabel() {
   const b = loadBest();
-  $('best').textContent = b == null ? '最佳時間：未有紀錄' : '最佳時間：' + fmt(b);
+  const name = mapDef.name;
+  $('best').textContent = b == null ? (name + ' 最佳：未有紀錄') : (name + ' 最佳：' + fmt(b));
 }
 function loadBest() {
   try {
-    const v = localStorage.getItem('talesdash3d_best');
+    let v = localStorage.getItem(bestKey());
+    if ((v == null || v === '') && mapDef.id === 'forest') v = localStorage.getItem('talesdash3d_best');
     if (v == null || v === '') return null;
     const n = parseFloat(v);
     return Number.isFinite(n) ? n : null;
   } catch (e) { return null; }
 }
 function saveBest(t) {
-  try { localStorage.setItem('talesdash3d_best', String(t)); } catch (e) { /* ignore */ }
+  try { localStorage.setItem(bestKey(), String(t)); } catch (e) { /* ignore */ }
 }
 function updateHUD() {
   const racingUI = screen === 'race' || screen === 'countdown' || screen === 'paused';
@@ -2629,6 +3816,8 @@ function bindInput() {
   document.addEventListener('visibilitychange', () => { if (document.hidden) doPause(); });
   $('btn-solo').addEventListener('click', () => startRace('solo'));
   $('btn-vs').addEventListener('click', () => startRace('vs'));
+  $('map-prev').addEventListener('click', () => { if (screen === 'menu') stepMap(-1); });
+  $('map-next').addEventListener('click', () => { if (screen === 'menu') stepMap(1); });
   $('pause-btn').addEventListener('click', () => doPause());
   $('btn-resume').addEventListener('click', () => doResume());
   $('btn-retry').addEventListener('click', () => startRace(mode || 'vs'));
@@ -2864,6 +4053,8 @@ function simulate(dt) {
     worldT += dt;
   } else if (screen === 'countdown') worldT += dt;
   updateBlocks(worldT);
+  updateTiles(worldT);
+  updateRotors(worldT);
   updateHammers(worldT);
   updateBalls(dt);
   updatePackLead();
@@ -2875,6 +4066,7 @@ function simulate(dt) {
     stepRunner(r, dt);
   }
   collideRunners();
+  railRunners();
   hazards();
   computeRanks();
   if (screen === 'race') updateRaceRules(dt);
@@ -3054,6 +4246,8 @@ function frame(now) {
   if (screen === 'menu') {
     menuT += realDt;
     updateBlocks(menuT);
+    updateTiles(menuT);
+    updateRotors(menuT);
     updateHammers(menuT);
   } else if (screen === 'results') {
     resultsT += realDt;
@@ -3076,10 +4270,12 @@ function frame(now) {
   if (screen === 'race' || screen === 'countdown') {
     syncPads(worldT);
     syncBlocks();
+    syncTiles();
     syncBalls();
   } else if (screen === 'menu') {
     syncPads(menuT);
     syncBlocks();
+    syncTiles();
   }
   syncRunners(visDt);
   if (screen !== 'results' || mode !== 'vs') syncShadows();
@@ -3088,6 +4284,162 @@ function frame(now) {
   renderer.render(scene, camera);
   lastTri = renderer.info.render.triangles;
   requestAnimationFrame(frame);
+}
+function disposeObj(obj) {
+  if (!obj) return;
+  if (obj.geometry && !obj.geometry.userData.shared && !obj.geometry.userData.dead) {
+    obj.geometry.dispose();
+    obj.geometry.userData.dead = true;
+  }
+  const mats = obj.material ? (Array.isArray(obj.material) ? obj.material : [obj.material]) : [];
+  for (let i = 0; i < mats.length; i++) {
+    const m = mats[i];
+    if (!m || m.userData.shared || m.userData.dead) continue;
+    if (m.map && !m.map.userData.shared && !m.map.userData.dead) {
+      m.map.dispose();
+      m.map.userData.dead = true;
+    }
+    m.dispose();
+    m.userData.dead = true;
+  }
+}
+function clearWorld() {
+  if (!worldRoot) return;
+  const kids = worldRoot.children.slice();
+  for (let i = 0; i < kids.length; i++) {
+    kids[i].traverse((o) => disposeObj(o));
+    worldRoot.remove(kids[i]);
+  }
+  if (skyMesh) {
+    disposeObj(skyMesh);
+    scene.remove(skyMesh);
+    skyMesh = null;
+  }
+  if (sunMesh) {
+    disposeObj(sunMesh);
+    scene.remove(sunMesh);
+    sunMesh = null;
+  }
+  blockMesh = null;
+  padMesh = null;
+  ballMesh = null;
+  shadowMesh = null;
+  tileMesh = null;
+}
+function subtractRange(segs, a, b) {
+  const out = [];
+  for (let i = 0; i < segs.length; i++) {
+    const s0 = segs[i][0];
+    const s1 = segs[i][1];
+    if (s1 <= a || s0 >= b) { out.push([s0, s1]); continue; }
+    if (s0 < a) out.push([s0, a]);
+    if (s1 > b) out.push([b, s1]);
+  }
+  return out;
+}
+function buildRoads() {
+  let segs = [[0, trackLength]];
+  for (let i = 0; i < gaps.length; i++) segs = subtractRange(segs, gaps[i].s0, gaps[i].s1);
+  for (let i = 0; i < narrows.length; i++) segs = subtractRange(segs, narrows[i].s0, narrows[i].s1);
+  for (let i = 0; i < forks.length; i++) segs = subtractRange(segs, forks[i].s0, forks[i].sMerge);
+  for (let i = 0; i < tileZones.length; i++) segs = subtractRange(segs, tileZones[i].s0, tileZones[i].s1);
+  const roadPal = mapDef.theme.road === 'candy' ? 'candy' : (mapDef.theme.road === 'snow' ? 'snow' : null);
+  for (let i = 0; i < segs.length; i++) buildRoad(segs[i][0], segs[i][1], { palette: roadPal });
+  for (let i = 0; i < narrows.length; i++) {
+    const n = narrows[i];
+    buildRoad(n.s0, n.s1, {
+      palette: mapDef.theme.narrow || roadPal,
+      halfFn: function (s) { return narrowHalfAt(n, s); },
+      xFn: function () { return n.x || 0; },
+    });
+  }
+  for (let i = 0; i < forks.length; i++) {
+    const f = forks[i];
+    let shortSegs = [[f.s0, f.sShortExit]];
+    const tileS = f.tileS || [];
+    for (let ti = 0; ti < tileS.length; ti++) shortSegs = subtractRange(shortSegs, tileS[ti] - 1.25, tileS[ti] + 1.25);
+    for (let si = 0; si < shortSegs.length; si++) {
+      buildRoad(shortSegs[si][0], shortSegs[si][1], {
+        palette: 'short',
+        yLift: 0.05,
+        halfFn: function (s) {
+          const g = forkBandGeom(f, s, 'short');
+          return g ? g.half : 0.2;
+        },
+        xFn: function (s) {
+          const g = forkBandGeom(f, s, 'short');
+          return g ? g.x : f.shortX;
+        },
+      });
+    }
+    buildRoad(f.s0, f.sMerge, {
+      palette: 'long',
+      halfFn: function (s) {
+        const g = forkBandGeom(f, s, 'long');
+        return g ? g.half : 3.5;
+      },
+      xFn: function (s) {
+        const g = forkBandGeom(f, s, 'long');
+        return g ? g.x : 0;
+      },
+    });
+  }
+}
+function applyTheme() {
+  const th = mapDef.theme;
+  scene.fog = new THREE.Fog(th.fog, th.fogNear, th.fogFar);
+  scene.background = new THREE.Color(th.bg);
+  renderer.setClearColor(th.clear, 1);
+  if (hemiLight) {
+    hemiLight.color.set(th.hemiSky);
+    hemiLight.groundColor.set(th.hemiGround);
+  }
+  if (dirLight) dirLight.color.set(th.sun);
+}
+function loadMap(id) {
+  let idx = 0;
+  for (let i = 0; i < MAPS.length; i++) if (MAPS[i].id === id) idx = i;
+  mapIndex = idx;
+  mapDef = MAPS[idx];
+  gaps = mapDef.gaps;
+  checkpoints = mapDef.cps;
+  narrows = mapDef.narrows || [];
+  forks = mapDef.forks || [];
+  tileZones = mapDef.tileZones || [];
+  roadStep = mapDef.targetLen > 900 ? 1.45 : (mapDef.targetLen > 650 ? 1.2 : 1);
+  clearWorld();
+  blocks = [];
+  hurdles = [];
+  hurdleRows = [];
+  pads = [];
+  hammers = [];
+  springs = [];
+  walls = [];
+  tiles = [];
+  rotors = [];
+  for (let i = 0; i < balls.length; i++) balls[i].alive = false;
+  ballIntro = false;
+  buildTrack();
+  applyTheme();
+  buildSky();
+  buildGround();
+  buildRoads();
+  buildDecor();
+  buildObstacles();
+  if (screen === 'menu' && runners.length) placeMenu();
+  refreshMapCard();
+  updateBestLabel();
+  if ($('bar')) refreshTicks();
+  camSnap = true;
+}
+function stepMap(dir) {
+  const n = (mapIndex + dir + MAPS.length) % MAPS.length;
+  loadMap(MAPS[n].id);
+}
+function setMap(id) {
+  if (screen !== 'menu') showMenu();
+  if (!id || mapDef.id === id) return;
+  loadMap(id);
 }
 function init() {
   const canvas = $('view');
@@ -3105,26 +4457,20 @@ function init() {
   scene.fog = new THREE.Fog(0xd7f3ff, 90, 260);
   camera = new THREE.PerspectiveCamera(65, 1, 0.1, 900);
   camera.position.set(0, 8, -12);
-  scene.add(new THREE.HemisphereLight(0xfff4ea, 0x6fbf62, 0.95));
-  const dir = new THREE.DirectionalLight(0xfff7e8, 1.25);
-  dir.position.set(-40, 90, 24);
-  scene.add(dir);
+  hemiLight = new THREE.HemisphereLight(0xfff4ea, 0x6fbf62, 0.95);
+  scene.add(hemiLight);
+  dirLight = new THREE.DirectionalLight(0xfff7e8, 1.25);
+  dirLight.position.set(-40, 90, 24);
+  scene.add(dirLight);
   worldRoot = new THREE.Group();
   scene.add(worldRoot);
   initGeos();
-  buildTrack();
-  buildSky();
-  buildGround();
-  buildRoad(0, GAP0);
-  buildRoad(GAP1, trackLength);
   buildRunners();
-  buildDecor();
-  buildObstacles();
   buildPodium();
+  screen = 'menu';
+  loadMap('forest');
   buildHUD();
   bindInput();
-  placeMenu();
-  updateBestLabel();
   resize();
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', resize);
@@ -3147,6 +4493,9 @@ function installTestHook() {
       return {
         screen,
         mode,
+        map: mapDef.id,
+        mapName: mapDef.name,
+        checkpoints: checkpoints.slice(),
         time: raceTime,
         trackLength,
         section: player ? sectionAt(player.s) : 1,
@@ -3171,7 +4520,21 @@ function installTestHook() {
         })),
       };
     },
-    start: (m) => startRace(m === 'solo' ? 'solo' : 'vs'),
+    maps: () => MAPS.map((m) => ({ id: m.id, name: m.name, difficulty: m.difficulty })),
+    setMap: (id) => setMap(id),
+    start: (m, mapId) => {
+      if (mapId && mapId !== mapDef.id) {
+        if (screen !== 'menu') showMenu();
+        loadMap(mapId);
+      }
+      startRace(m === 'solo' ? 'solo' : 'vs');
+    },
+    closeup: (i) => {
+      if (i == null) { closeupId = null; camSnap = true; return; }
+      const n = i | 0;
+      closeupId = (n >= 0 && n < runners.length) ? n : null;
+      camSnap = true;
+    },
     autopilot: (on) => {
       autopilot = !!on;
       if (player) player.speedMul = autopilot ? STRONG.speedMul : 1;
@@ -3185,13 +4548,13 @@ function installTestHook() {
       r.x = +x || 0;
       r.vx = 0; r.vy = 0; r.vs = 8 * r.speedMul;
       r.knockT = 0; r.respawnT = 0; r.finished = false; r.dnf = false; r.finishTime = null;
-      r.checkpointIndex = 0;
-      for (let i = 0; i < CP_S.length; i++) if (r.s >= CP_S[i]) r.checkpointIndex = i;
+      r.checkpointIndex = cpIndexAt(r.s);
+      r.carrier = null; r.carryOff = 0; r.carryOffX = 0; r.carryOffS = 0;
       if (inGap(r.s)) snapOntoBlock(r);
       const g = queryGround(r.s, r.x);
-      if (g) { r.y = g.h; r.grounded = true; r.jumpsUsed = 0; }
+      if (g) { r.y = g.h; r.grounded = true; r.jumpsUsed = 0; r.carrier = g.carrier; }
       else { r.y = 1.6; r.grounded = false; r.jumpsUsed = 1; }
-      if (r.s >= CP_S[3] && r.s < trackLength - 24) ensureBallsAhead(r.s);
+      if (mapDef.balls && r.s >= mapDef.balls.from && r.s < trackLength - 24) ensureBallsAhead(r.s);
       camSnap = true;
     },
     camInfo: () => {
@@ -3213,8 +4576,9 @@ function installTestHook() {
     forceFall: () => {
       ensurePlaying();
       const r = player;
-      r.s = (GAP0 + GAP1) * 0.5;
-      r.x = 6.3;
+      const d = mapDef.danger || { s: gaps.length ? (gaps[0].s0 + gaps[0].s1) * 0.5 : 40, x: 6.3 };
+      r.s = d.s;
+      r.x = d.x;
       r.y = 3;
       r.vy = 0;
       r.vs = 8;
@@ -3224,7 +4588,9 @@ function installTestHook() {
       r.knockT = 0;
       r.finished = false;
       r.dnf = false;
-      r.checkpointIndex = 2;
+      r.carrier = null;
+      r.carryOff = 0; r.carryOffX = 0; r.carryOffS = 0;
+      r.checkpointIndex = cpIndexAt(r.s);
       camSnap = true;
     },
     pause: () => doPause(),

@@ -210,10 +210,31 @@
     text-shadow: 0 4px 0 #ffd0e2; transform: rotate(-2deg);
   }
   #menu .sub {
-    margin: 2px 0 8px; font-weight: 900; letter-spacing: 0.28em; color: var(--sky);
+    margin: 2px 0 6px; font-weight: 900; letter-spacing: 0.28em; color: var(--sky);
     font-size: clamp(12px, 3vmin, 16px);
   }
-  #best { font-weight: 900; margin: 4px 0 10px; font-size: clamp(14px, 3.4vmin, 18px); }
+  .map-picker {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin: 2px 0 6px;
+  }
+  .map-arrow {
+    flex: none; width: 40px; height: 40px; border-radius: 50%; border: none;
+    background: #fff; color: var(--ink); font-size: 24px; font-weight: 900; line-height: 1;
+    box-shadow: 0 3px 0 rgba(60, 30, 70, 0.18);
+  }
+  #map-card {
+    flex: 1 1 auto; min-width: 0; max-width: 240px;
+    border-radius: 16px; padding: 4px 10px 5px;
+    background: #fff; border: 3px solid var(--map-color, #ff4d8d);
+  }
+  #map-name {
+    font-weight: 900; font-size: clamp(14px, 3.4vmin, 18px); line-height: 1.15;
+    color: var(--ink);
+  }
+  #map-meta { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  #map-stars { color: #e09000; font-weight: 900; letter-spacing: 0.06em; font-size: 14px; line-height: 1; }
+  #map-level { font-size: 12px; font-weight: 800; color: #7a6a90; }
+  #best { font-weight: 900; margin: 2px 0 8px; font-size: clamp(13px, 3.2vmin, 17px); }
   .modes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .big {
     flex: 1 1 150px; border: none; border-radius: 999px; min-height: 52px;
@@ -316,7 +337,13 @@
     #menu .menu-main { flex: 1 1 44%; min-width: 0; }
     #menu h1 { font-size: clamp(26px, 8.4vh, 42px); }
     #menu .sub { margin: 0; font-size: clamp(11px, 2.8vh, 14px); letter-spacing: 0.16em; }
-    #best { margin: 2px 0 6px; font-size: clamp(12px, 3vh, 15px); }
+    #best { margin: 2px 0 4px; font-size: clamp(12px, 3vh, 15px); }
+    .map-picker { margin: 2px 0 4px; }
+    .map-arrow { width: 32px; height: 32px; font-size: 20px; }
+    #map-card { padding: 2px 8px 3px; }
+    #map-name { font-size: clamp(13px, 3.3vh, 16px); }
+    #map-stars { font-size: 12px; }
+    #map-level { font-size: 11px; }
     #menu .big { min-height: 38px; font-size: clamp(15px, 4.4vh, 20px); }
     #menu .how {
       display: block;
@@ -371,7 +398,15 @@
     <div class="menu-main">
       <h1>童話衝刺</h1>
       <div class="sub">Tales Dash</div>
-      <div id="best">最佳時間：未有紀錄</div>
+      <div class="map-picker">
+        <button id="map-prev" class="map-arrow" type="button" aria-label="上一張地圖">‹</button>
+        <div id="map-card">
+          <div id="map-name">童話森林</div>
+          <div id="map-meta"><span id="map-stars">★☆☆</span><span id="map-level">簡單</span></div>
+        </div>
+        <button id="map-next" class="map-arrow" type="button" aria-label="下一張地圖">›</button>
+      </div>
+      <div id="best">童話森林 最佳：未有紀錄</div>
       <div class="modes">
         <button id="btn-solo" class="big" type="button">自己玩</button>
         <button id="btn-vs" class="big" type="button">同電腦鬥</button>
@@ -379,7 +414,7 @@
     </div>
     <div class="how">
       <b>玩法</b>
-      <p>自動向前跑・左邊拖動轉向・跳（空中再按二段跳，下墜連按加速落地）・按住衝刺（用衝刺計，用盡會力竭）・落地瞬間按衝刺＝著地衝刺</p>
+      <p>左右切換地圖。自動向前跑・左邊拖動轉向・跳（空中再按二段跳，下墜連按加速落地）・按住衝刺（用衝刺計，用盡會力竭）・落地瞬間按衝刺＝著地衝刺</p>
       <p class="keys">鍵盤：←→ 轉向　Space/Ctrl 跳　Z/Shift 衝刺　P 暫停</p>
     </div>
   </div>
