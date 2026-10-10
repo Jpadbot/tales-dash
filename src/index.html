@@ -82,7 +82,7 @@
     position: absolute; left: 50%;
     bottom: calc(12px + var(--sab));
     transform: translateX(-58%);
-    width: min(520px, calc(100vw - 250px - var(--sal) - var(--sar)));
+    width: min(520px, calc(100vw - 300px - var(--sal) - var(--sar)));
     min-width: 140px;
   }
   #progress .labs {
@@ -153,34 +153,34 @@
     box-shadow: 0 3px 0 rgba(60, 40, 90, 0.25); z-index: 20;
   }
 
-  #touch { position: fixed; inset: 0; z-index: 14; pointer-events: none; }
+  #touch { position: fixed; inset: 0; z-index: 16; pointer-events: none; }
   #steer-catch {
     pointer-events: auto; position: absolute; left: 0;
     top: calc(58px + var(--sat)); bottom: 0; width: 50%; touch-action: none;
   }
   #btn-jump, #btn-dash {
-    pointer-events: auto; position: absolute; border-radius: 50%;
-    width: clamp(78px, 22vmin, 96px); height: clamp(78px, 22vmin, 96px);
+    pointer-events: auto; position: absolute; z-index: 2; border-radius: 50%;
+    width: clamp(92px, 26vmin, 118px); height: clamp(92px, 26vmin, 118px);
     border: 3px solid rgba(255,255,255,0.9);
     background: rgba(255,255,255,0.38); color: #fff; font-weight: 900;
-    font-size: clamp(18px, 4.6vmin, 26px);
+    font-size: clamp(20px, 5vmin, 28px);
     text-shadow: 0 2px 0 rgba(40,20,70,0.45);
     box-shadow: 0 6px 0 rgba(40, 30, 80, 0.22), inset 0 0 0 4px rgba(255,255,255,0.18);
     touch-action: none;
   }
   #btn-jump {
-    right: calc(14px + var(--sar));
-    bottom: calc(16px + var(--sab));
+    right: calc(12px + var(--sar));
+    bottom: calc(14px + var(--sab));
     background: rgba(255, 77, 141, 0.9);
   }
   #btn-dash {
-    right: calc(104px + var(--sar));
-    bottom: calc(86px + var(--sab));
+    right: calc(132px + var(--sar));
+    bottom: calc(118px + var(--sab));
     background: rgba(47, 125, 255, 0.92);
   }
   #btn-dash.dim { filter: grayscale(0.7) brightness(0.85); }
 
-  #joy { position: fixed; z-index: 15; width: 0; height: 0; pointer-events: none; }
+  #joy { position: fixed; z-index: 17; width: 0; height: 0; pointer-events: none; }
   .joy-ring {
     position: absolute; width: 92px; height: 92px; margin: -46px 0 0 -46px;
     border-radius: 50%; border: 3px solid rgba(255,255,255,0.7);
@@ -232,7 +232,7 @@
     color: var(--ink);
   }
   #map-meta { display: flex; justify-content: center; align-items: center; gap: 8px; }
-  #map-stars { color: #e09000; font-weight: 900; letter-spacing: 0.06em; font-size: 14px; line-height: 1; }
+  #map-stars { color: #e09000; font-weight: 900; letter-spacing: 0.02em; font-size: 13px; line-height: 1; }
   #map-level { font-size: 12px; font-weight: 800; color: #7a6a90; }
   #best { font-weight: 900; margin: 2px 0 8px; font-size: clamp(13px, 3.2vmin, 17px); }
   .modes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
@@ -303,7 +303,7 @@
     #rank { font-size: clamp(28px, 9vw, 48px); }
     #progress {
       width: min(92vw, 420px); left: 50%; transform: translateX(-50%);
-      bottom: calc(188px + var(--sab));
+      bottom: calc(250px + var(--sab));
     }
     #results .card { max-height: min(46vh, 420px); }
     #results.vs { align-items: flex-end; justify-content: center; }
@@ -414,7 +414,7 @@
     </div>
     <div class="how">
       <b>玩法</b>
-      <p>左右切換地圖。自動向前跑・左邊拖動轉向・跳（空中再按二段跳，下墜連按加速落地）・按住衝刺（用衝刺計，用盡會力竭）・落地瞬間按衝刺＝著地衝刺</p>
+      <p>左右切換地圖。自動向前跑・左邊拖動可自由橫移・跳（空中再按二段跳，下墜連按加速落地）・按住衝刺（用衝刺計，用盡會力竭）・落地瞬間按衝刺＝著地衝刺。分岔路中間有主路，靠左近路是捷徑。</p>
       <p class="keys">鍵盤：←→ 轉向　Space/Ctrl 跳　Z/Shift 衝刺　P 暫停</p>
     </div>
   </div>

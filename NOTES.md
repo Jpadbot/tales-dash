@@ -1,5 +1,14 @@
 # 開發紀錄 / Provenance
 
+
+## mapfix（分岔自由移動＋新地圖，2026-10-11 HKT，分支 `fix/map-bugs`）
+- Grok CLI：**1.0.51**；模型 **grok-4.7**（可見 TUI，`DISPLAY :7`，`always-approve`）。
+- 任務 brief：`GROK_TASK_MAPFIX.md`。
+- 修正：分岔 `forkCenterGeom` 中央主路帶（candy/snow/cloud/lava 中間 x≈0 可走）；跳／衝刺 `setPointerCapture` try/catch；星星顯示至 ★★★★★。
+- 新地圖：`cloud` 雲端城堡★★★★、`lava` 熔岩地牢★★★★★。
+- 代理補修：AI 跨欄窗口 `s>118`→`s>55`（熔岩首欄在 110 導致軟鎖）；熔岩／雲端跨欄補 gaps。
+- 驗證：puppetee probe — 分岔中心 ok；五圖 solo 可完（補修後）；maxTri < 45k。
+
 ## v3（多地圖＋更可愛角色，2026-10-06～07 HKT，分支 `feat/v3-maps-cute`）
 - Grok CLI：`grok update` → 已是最新 **grok 1.0.49 (8e66fdf1fd8e) [alpha]**；`grok models` 預設 **grok-4.7**（TUI 顯示 Grok 4.7 (high)）。
 - 使用模式：**互動 TUI，於 box 桌面（DISPLAY :7）可見之 xfce4-terminal 內執行**：`grok --cwd /workspace/tales-dash --always-approve -m grok-4.7 "<prompt>"`（新 session）。

@@ -10,7 +10,7 @@ const GROUND_Y = -22;
 const BALL_MAX = 6;
 const FIXED = 1 / 60;
 const HURDLE_X = [-2.625, -0.875, 0.875, 2.625];
-const LEVEL_NAME = ['', '簡單', '普通', '困難'];
+const LEVEL_NAME = ['', '簡單', '普通', '困難', '極難', '地獄'];
 
 const FOREST_RAW = [
   [0, 0.15, 0],
@@ -144,6 +144,136 @@ const MAPS = [
       postA: 0xffffff, postB: 0x9fd0ff,
     },
   },
+  {
+    id: 'cloud',
+    name: '雲端城堡',
+    difficulty: 4,
+    ui: '#7d6bff',
+    step: 2.05,
+    raw: [
+      [0, 0.6, 0], [16, 3.4, 80], [6, 7.2, 160], [-18, 10.4, 250],
+      [-32, 7.6, 340], [-10, 4.2, 430], [18, 8.8, 520], [34, 12.2, 620],
+      [12, 9.4, 710], [-16, 6.2, 800], [-30, 11.6, 900], [-4, 8.2, 990],
+      [22, 4.4, 1080], [30, 2.2, 1160], [8, 0.8, 1240], [-4, 0.3, 1320],
+    ],
+    targetLen: 1290,
+    blockStyle: 'move',
+    blockColors: [0xf4e9ff, 0xffe08a, 0xd5e4ff, 0xfff6ea],
+    moveAmp: 1.08,
+    deckGap: 1.9,
+    deckSpan: 8.0,
+    cps: [0, 120, 230, 360, 548, 700, 805, 990, 1135, 1248],
+    gaps: [{ s0: 835, s1: 960 }],
+    narrows: [
+      { s0: 258, s1: 340, x: 0, half: 1.02, intro: 12, outro: 10 },
+      { s0: 1020, s1: 1105, x: 0, half: 0.9, intro: 12, outro: 10 },
+    ],
+    forks: [
+      {
+        s0: 392, sShortExit: 478, sMerge: 522,
+        shortX: -3.15, shortHalf: 1.0, longX: 2.4, longHalf: 1.75,
+        diverge: 16, converge: 14, rotorS: 452, tileS: [464, 474],
+        tileColor: 0xffd56a, rotorColor: 0xfff6ea, rotorCap: 0x7d6bff,
+      },
+      {
+        s0: 1168, sShortExit: 1212, sMerge: 1232,
+        shortX: -3.05, shortHalf: 0.96, longX: 2.35, longHalf: 1.7,
+        diverge: 14, converge: 12, rotorS: 1198, tileS: [1206],
+        tileColor: 0xffe08a, rotorColor: 0xfff6ea, rotorCap: 0xb088ff,
+      },
+    ],
+    tileZones: [{
+      s0: 578, s1: 672,
+      colors: [0xf7f1ff, 0xffe9a8, 0xd7e6ff],
+      period: 2.4, on: 1.72,
+    }],
+    danger: { s: 300, x: 4.3 },
+    hurdles: [
+      { s: 142, gaps: [2] }, { s: 160, gaps: [1] }, { s: 178, gaps: [0] }, { s: 196, gaps: [3] }, { s: 214, gaps: [1] },
+    ],
+    pads: [[30, 0.2], [72, -1.05], [108, 0.85]],
+    rotors: [
+      { s: 732, x: 0, halfLen: 3.05, omega: 1.08, phase: 0.4, pivotY: 1.12, color: 0xfff6ea, cap: 0x7d6bff },
+      { s: 770, x: 0, halfLen: 3.05, omega: 1.16, phase: 2.1, pivotY: 1.12, color: 0xfff3c4, cap: 0xffd56a },
+    ],
+    hammers: [],
+    balls: null,
+    finale: [-30, -14],
+    theme: {
+      decor: 'cloud', road: 'cloud', narrow: 'skybridge',
+      clear: 0xd9c8ff, bg: 0xd9c8ff, fog: 0xefe6ff, fogNear: 62, fogFar: 220,
+      ground: 0xc5d0f2, hemiSky: 0xf7f1ff, hemiGround: 0x9aa6d4, sun: 0xfff3c4,
+      skyTop: 0x6a5cff, skyMid: 0xc9b6ff, skyHor: 0xffe6f4, skyBot: 0xd5e4ff,
+      postA: 0xfff6ea, postB: 0xb088ff,
+    },
+  },
+  {
+    id: 'lava',
+    name: '熔岩地牢',
+    difficulty: 5,
+    ui: '#ff5a2a',
+    step: 2.2,
+    raw: [
+      [0, 0.5, 0], [-14, 2.8, 70], [-28, 6.4, 150], [-8, 4.2, 230],
+      [18, 1.4, 320], [32, -0.6, 410], [10, 2.6, 500], [-20, 5.8, 590],
+      [-34, 3.2, 680], [-12, 0.4, 770], [16, -1.2, 860], [30, 2.4, 950],
+      [8, 5.6, 1040], [-18, 3.4, 1130], [-8, 1.2, 1220], [6, 0.3, 1320], [2, 0.2, 1400],
+    ],
+    targetLen: 1390,
+    blockStyle: 'move',
+    blockColors: [0xff6a3a, 0x3a2422, 0xffb15a, 0x6a3030],
+    moveAmp: 1.22,
+    deckGap: 2.02,
+    deckSpan: 7.6,
+    cps: [0, 95, 185, 325, 510, 670, 800, 980, 1100, 1272],
+    gaps: [{ s0: 830, s1: 950 }],
+    narrows: [
+      { s0: 210, s1: 300, x: 0, half: 0.92, intro: 12, outro: 10 },
+      { s0: 1005, s1: 1088, x: 0, half: 0.86, intro: 11, outro: 10 },
+    ],
+    forks: [
+      {
+        s0: 355, sShortExit: 442, sMerge: 486,
+        shortX: -3.2, shortHalf: 0.96, longX: 2.45, longHalf: 1.65,
+        diverge: 15, converge: 13, rotorS: 418, tileS: [428, 438],
+        tileColor: 0xff6a3a, rotorColor: 0xffd0b0, rotorCap: 0xff3a1a, rotorOmega: 1.18,
+      },
+      {
+        s0: 1132, sShortExit: 1204, sMerge: 1248,
+        shortX: -3.1, shortHalf: 0.9, longX: 2.3, longHalf: 1.55,
+        diverge: 14, converge: 12, rotorS: 1182, tileS: [1192, 1200],
+        tileColor: 0xffb15a, rotorColor: 0xffe0c8, rotorCap: 0xff5a2a, rotorOmega: 1.22,
+      },
+    ],
+    tileZones: [{
+      s0: 540, s1: 640,
+      colors: [0xff6a3a, 0x2a1816, 0xffb15a],
+      period: 2.2, on: 1.52,
+    }],
+    danger: { s: 255, x: 4.1 },
+    hurdles: [
+      { s: 110, gaps: [1] }, { s: 126, gaps: [2] }, { s: 142, gaps: [0] }, { s: 158, gaps: [3] }, { s: 174, gaps: [1] },
+    ],
+    pads: [[24, 0], [58, 1.15], [88, -0.75]],
+    rotors: [
+      { s: 700, x: 0, halfLen: 3.1, omega: 1.2, phase: 0.2, pivotY: 1.1, color: 0xffd0b0, cap: 0xff3a1a },
+      { s: 734, x: 0, halfLen: 3.1, omega: 1.28, phase: 1.7, pivotY: 1.1, color: 0xffe0c8, cap: 0xff7a30 },
+      { s: 768, x: 0, halfLen: 3.05, omega: 1.14, phase: 3.1, pivotY: 1.1, color: 0xffd8c0, cap: 0xffb15a },
+    ],
+    hammers: [
+      { s: 1296, phase: 0.4, omega: 1.34, amp: 1.06 },
+      { s: 1324, phase: 2.2, omega: 1.2, amp: 1.04 },
+    ],
+    balls: { from: 1288, kill: 1268, introA: 1306, introB: 1322, introX: -2.05 },
+    finale: [-46, -22],
+    theme: {
+      decor: 'lava', road: 'lava', narrow: 'obsidian',
+      clear: 0x2a120e, bg: 0x2a120e, fog: 0x3a1814, fogNear: 42, fogFar: 175,
+      ground: 0x1a0e0c, hemiSky: 0xffb080, hemiGround: 0x3a1814, sun: 0xffb15a,
+      skyTop: 0x1a0a12, skyMid: 0x6a2418, skyHor: 0xff6a3a, skyBot: 0x2a1210,
+      postA: 0xff5a2a, postB: 0x2a1816,
+    },
+  },
 ];
 
 const ROSTER = [
@@ -271,6 +401,40 @@ function forkBandGeom(fork, s, kind) {
   const mid = lerp(3.5, fork.longHalf, u);
   return { kind: 'long', x: fork.longX * u * m, half: lerp(mid, 3.5, 1 - m) };
 }
+// Spine between the shortcut and the long road. The two side bands pull apart;
+// without this strip, x≈0 is a hole for the whole split.
+function forkCenterGeom(fork, s) {
+  if (s < fork.s0 || s >= fork.sMerge) return null;
+  const sh = s <= fork.sShortExit ? forkBandGeom(fork, Math.min(s, fork.sShortExit), 'short') : null;
+  const lg = forkBandGeom(fork, Math.min(s, fork.sMerge - 0.001), 'long');
+  let lo = -1.35;
+  let hi = 1.35;
+  const tuck = 0.65;
+  if (sh) {
+    lo = Math.min(lo, sh.x + sh.half - tuck);
+    hi = Math.max(hi, sh.x - sh.half + tuck);
+  }
+  if (lg) {
+    lo = Math.min(lo, lg.x + lg.half - tuck);
+    hi = Math.max(hi, lg.x - lg.half + tuck);
+  }
+  // Keep the shortcut deck for a few metres after it ends so a crossing
+  // runner is not dropped on the frame the pink road stops.
+  if (!sh && s < fork.sShortExit + 4) {
+    const tail = forkBandGeom(fork, Math.max(fork.s0 + 0.05, fork.sShortExit - 0.05), 'short');
+    if (tail) {
+      const fade = clamp(1 - (s - fork.sShortExit) / 4, 0, 1);
+      lo = Math.min(lo, tail.x - tail.half * fade);
+      hi = Math.max(hi, tail.x + tail.half * fade);
+    }
+  }
+  if (hi < lo + 1.8) {
+    const mid = (lo + hi) * 0.5;
+    lo = mid - 0.9;
+    hi = mid + 0.9;
+  }
+  return { kind: 'center', x: (lo + hi) * 0.5, half: (hi - lo) * 0.5 };
+}
 function bandsAt(s) {
   const nar = narrowAt(s);
   if (nar) return [{ kind: 'narrow', x: nar.x, half: narrowHalfAt(nar, s) }];
@@ -278,8 +442,10 @@ function bandsAt(s) {
   if (!fork) return null;
   const bands = [];
   const sh = forkBandGeom(fork, s, 'short');
+  const mid = forkCenterGeom(fork, s);
   const lg = forkBandGeom(fork, s, 'long');
   if (sh) bands.push(sh);
+  if (mid) bands.push(mid);
   if (lg) bands.push(lg);
   return bands.length ? bands : null;
 }
@@ -372,6 +538,7 @@ let resultsDelay = 0;
 let resultsShown = false;
 let autopilot = false;
 let timeScale = 1;
+let simHold = false;
 let packLeadS = 0;
 let acc = 0;
 let lastNow = 0;
@@ -707,6 +874,15 @@ function initGeos() {
     { geo: new THREE.ConeGeometry(0.55, 0.75, 6), y: 1.15, color: 0x228055 },
     { geo: new THREE.ConeGeometry(0.38, 0.6, 6), y: 1.55, color: 0x2f9460 },
   ]);
+  GEO.spire = mergeParts([
+    { geo: new THREE.CylinderGeometry(0.42, 0.58, 1.5, 6), y: 0.75, color: 0xf4e9ff },
+    { geo: new THREE.ConeGeometry(0.7, 1.05, 6), y: 1.95, color: 0xffd56a },
+    { geo: new THREE.ConeGeometry(0.14, 0.48, 5), y: 2.6, color: 0xfff6ea },
+  ]);
+  GEO.ember = mergeParts([
+    { geo: new THREE.CylinderGeometry(0.36, 0.48, 1.05, 5), y: 0.52, color: 0x3a2420 },
+    { geo: new THREE.ConeGeometry(0.2, 0.72, 5), y: 1.32, color: 0xff5a24 },
+  ]);
   GEO.snowman = mergeParts([
     { geo: new THREE.SphereGeometry(0.42, 7, 5), y: 0.35, color: 0xf7fbff },
     { geo: new THREE.SphereGeometry(0.3, 7, 5), y: 0.9, color: 0xffffff },
@@ -834,6 +1010,31 @@ function buildRoad(s0, s1, opt) {
         ? { body: new THREE.Color(0x7dface), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x0b8a72), solid: true }
         : { body: new THREE.Color(0xcfffe8), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x14967c), solid: true };
     }
+    if (palette === 'center') {
+      return alt
+        ? { body: new THREE.Color(0xffe08a), trim: new THREE.Color(0xfff6ea), skirt: new THREE.Color(0xd9a441), solid: false }
+        : { body: new THREE.Color(0xfff3c8), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0xe0b85a), solid: false };
+    }
+    if (palette === 'cloud') {
+      return alt
+        ? { body: new THREE.Color(0xe4d4ff), trim: new THREE.Color(0xfff6ea), skirt: new THREE.Color(0x7d68c4), solid: false }
+        : { body: new THREE.Color(0xf7f0ff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x6a58b0), solid: true };
+    }
+    if (palette === 'skybridge') {
+      return alt
+        ? { body: new THREE.Color(0xf4fbff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x9ec4ee), solid: true }
+        : { body: new THREE.Color(0xd5e8ff), trim: new THREE.Color(0xffffff), skirt: new THREE.Color(0x7eabd8), solid: true };
+    }
+    if (palette === 'lava') {
+      return alt
+        ? { body: new THREE.Color(0x5a342c), trim: new THREE.Color(0xffb08a), skirt: new THREE.Color(0x2a1612), solid: false }
+        : { body: new THREE.Color(0x7a4638), trim: new THREE.Color(0xffc8a4), skirt: new THREE.Color(0x3a1c16), solid: false };
+    }
+    if (palette === 'obsidian') {
+      return alt
+        ? { body: new THREE.Color(0x2e2628), trim: new THREE.Color(0xff7a3a), skirt: new THREE.Color(0x140c0c), solid: true }
+        : { body: new THREE.Color(0x3e3438), trim: new THREE.Color(0xffb060), skirt: new THREE.Color(0x1a1010), solid: true };
+    }
     if (palette === 'candy' || (palette == null && mapDef.theme.road === 'candy')) {
       return alt
         ? { body: new THREE.Color(0xff8ec4), trim: new THREE.Color(0xfff6ea), skirt: new THREE.Color(0xe05088), solid: false }
@@ -904,7 +1105,9 @@ function buildRoad(s0, s1, opt) {
 }
 function buildSky() {
   const th = mapDef.theme;
-  const geo = new THREE.SphereGeometry(430, 24, 16);
+  const seg = mapDef.targetLen > 1100 ? 16 : 24;
+  const rings = mapDef.targetLen > 1100 ? 12 : 16;
+  const geo = new THREE.SphereGeometry(430, seg, rings);
   const pa = geo.attributes.position;
   const col = new Float32Array(pa.count * 3);
   const top = new THREE.Color(th.skyTop);
@@ -945,9 +1148,97 @@ function nearFeature(s) {
   if (s > trackLength - 7) return true;
   return false;
 }
+function buildCloudProps() {
+  const spires = [];
+  const puffs = [];
+  for (let s = 26; s < trackLength - 12; s += 36) {
+    if (nearGapEdge(s, 2) || narrowAt(s) || forkAt(s) || tileZoneAt(s)) continue;
+    const side = (Math.floor(s / 36) % 2 === 0) ? 1 : -1;
+    const dist = 8.4 + (Math.floor(s) % 3);
+    if (Math.floor(s / 36) % 2 === 0) spires.push({ s: s, x: side * dist });
+    else puffs.push({ s: s, x: side * (dist - 0.4) });
+  }
+  if (spires.length) {
+    const mesh = makeInst(GEO.spire, MAT.vc, spires.length);
+    spires.forEach((st, i) => {
+      toWorld(st.s, st.x, 0, vD);
+      qA.identity();
+      const sc = 1.15 + (i % 3) * 0.12;
+      setInst(mesh, i, vD, qA, sc, sc, sc);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  if (puffs.length) {
+    const mesh = makeInst(GEO.cloud, MAT.vc, puffs.length);
+    puffs.forEach((st, i) => {
+      toWorld(st.s, st.x, 1.1, vD);
+      qA.setFromAxisAngle(WORLD_UP, i * 0.6);
+      const sc = 1.3 + (i % 2) * 0.25;
+      setInst(mesh, i, vD, qA, sc, sc * 0.7, sc);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+function buildLavaProps() {
+  const rocks = [];
+  const crystals = [];
+  for (let s = 24; s < trackLength - 12; s += 32) {
+    if (nearGapEdge(s, 2) || narrowAt(s) || forkAt(s) || tileZoneAt(s)) continue;
+    const side = (Math.floor(s / 32) % 2 === 0) ? 1 : -1;
+    const dist = 8.0 + (Math.floor(s) % 4);
+    if (Math.floor(s / 32) % 2 === 0) rocks.push({ s: s, x: side * dist });
+    else crystals.push({ s: s, x: side * (dist - 0.5) });
+  }
+  if (rocks.length) {
+    const mesh = makeInst(GEO.ember, MAT.vc, rocks.length);
+    rocks.forEach((st, i) => {
+      toWorld(st.s, st.x, 0, vD);
+      qA.setFromAxisAngle(WORLD_UP, i * 0.5);
+      const sc = 1.2 + (i % 3) * 0.18;
+      setInst(mesh, i, vD, qA, sc, sc, sc);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  if (crystals.length) {
+    const mesh = makeInst(GEO.crystal, toon(0xffffff), crystals.length);
+    const cols = [0xff5a24, 0xffb15a, 0xff3a1a, 0xffd0a0];
+    crystals.forEach((st, i) => {
+      toWorld(st.s, st.x, 0.7, vD);
+      qA.setFromAxisAngle(WORLD_UP, i * 0.4);
+      setInst(mesh, i, vD, qA, 0.8, 1.35, 0.8);
+      mesh.setColorAt(i, colA.set(cols[i % cols.length]));
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
+}
+function addLavaKeep(s, x, sc) {
+  const g = new THREE.Group();
+  placeOnTrack(g, s, x, 0);
+  g.position.y = GROUND_Y;
+  g.scale.setScalar(sc);
+  const wall = toon(0x3a2422);
+  const hot = toon(0xff5a2a);
+  const keep = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.4, 2.4), wall);
+  keep.position.y = 2.2;
+  g.add(keep);
+  const cyl = new THREE.CylinderGeometry(0.48, 0.6, 3.1, 6);
+  const cone = new THREE.ConeGeometry(0.72, 1.15, 6);
+  [[-1.7, -1.15], [1.7, -1.15], [-1.7, 1.15], [1.7, 1.15]].forEach((t) => {
+    const c = new THREE.Mesh(cyl, wall);
+    c.position.set(t[0], 2.5, t[1]);
+    const r = new THREE.Mesh(cone, hot);
+    r.position.set(t[0], 4.5, t[1]);
+    g.add(c, r);
+  });
+  const glow = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.16), hot);
+  glow.position.set(0, 1.35, 1.25);
+  g.add(glow);
+  worldRoot.add(g);
+}
 function buildDecor() {
   const postPos = [];
-  const postStep = mapDef.targetLen > 900 ? 8 : 6;
+  const postStep = mapDef.targetLen > 1100 ? 12 : (mapDef.targetLen > 900 ? 8 : 6);
   const postGeo = mapDef.theme.decor === 'forest'
     ? GEO.post
     : stripeColorGeo(new THREE.CylinderGeometry(0.1, 0.12, 1.15, 6), 6, mapDef.theme.postA, mapDef.theme.postB);
@@ -1023,17 +1314,27 @@ function buildDecor() {
   stickMesh.instanceMatrix.needsUpdate = true;
   } else if (mapDef.theme.decor === 'candy') {
     buildCandyProps();
+  } else if (mapDef.theme.decor === 'snow') {
+    buildSnowProps();
+  } else if (mapDef.theme.decor === 'cloud') {
+    buildCloudProps();
+  } else if (mapDef.theme.decor === 'lava') {
+    buildLavaProps();
   } else {
     buildSnowProps();
   }
 
-  const hillN = mapDef.targetLen > 900 ? 18 : 22;
+  const hillN = mapDef.targetLen > 1100 ? 12 : (mapDef.targetLen > 900 ? 16 : 22);
   const hillMesh = makeInst(GEO.hill, toon(0xffffff), hillN);
   const hillCols = mapDef.theme.decor === 'snow'
     ? [0xf4f8ff, 0xd5e6f5, 0xeef6ff, 0xc5d8ea]
     : mapDef.theme.decor === 'candy'
       ? [0xffb7d8, 0xffe0a8, 0xb6f3da, 0xffc4e4]
-      : [0x7dce6a, 0x8ed67a, 0x63b85a, 0xa4d86a];
+      : mapDef.theme.decor === 'cloud'
+        ? [0xd8ccff, 0xf4e9ff, 0xfff3c4, 0xc5d4f5]
+        : mapDef.theme.decor === 'lava'
+          ? [0x4a221c, 0x2a1412, 0x6a3028, 0x8a3a22]
+          : [0x7dce6a, 0x8ed67a, 0x63b85a, 0xa4d86a];
   for (let i = 0; i < hillN; i++) {
     const s = (i / hillN) * trackLength;
     const side = i % 2 === 0 ? 1 : -1;
@@ -1049,7 +1350,7 @@ function buildDecor() {
   hillMesh.instanceMatrix.needsUpdate = true;
   hillMesh.instanceColor.needsUpdate = true;
 
-  const cloudN = 14;
+  const cloudN = mapDef.targetLen > 1100 ? 10 : 14;
   const cloudMesh = makeInst(GEO.cloud, MAT.vc, cloudN);
   for (let i = 0; i < cloudN; i++) {
     const s = (i * 47) % trackLength;
@@ -1086,6 +1387,13 @@ function buildDecor() {
   } else if (mapDef.theme.decor === 'candy') {
     addCandyLandmark(trackLength * 0.12, 18, 1.5);
     addCandyLandmark(trackLength * 0.9, -16, 1.8);
+  } else if (mapDef.theme.decor === 'cloud') {
+    addCastleAt(trackLength * 0.1, 22, 1.45, 0);
+    addCastleAt(trackLength * 0.62, -24, 1.15, 14);
+    addCastleAt(trackLength * 0.94, 16, 1.6, 0);
+  } else if (mapDef.theme.decor === 'lava') {
+    addLavaKeep(trackLength * 0.14, 16, 1.35);
+    addLavaKeep(trackLength * 0.9, -14, 1.55);
   } else {
     addSnowLandmark(trackLength * 0.1, 20, 1.6);
     addSnowLandmark(trackLength * 0.92, -14, 1.9);
@@ -1236,10 +1544,11 @@ function addSnowLandmark(s, x, sc) {
   g.add(pine, man, cry);
   worldRoot.add(g);
 }
-function addCastleAt(s, x, sc) {
+function addCastleAt(s, x, sc, yLift) {
   const g = new THREE.Group();
   placeOnTrack(g, s, x, 0);
-  g.position.y = GROUND_Y;
+  if (yLift) g.position.y += yLift;
+  else g.position.y = GROUND_Y;
   g.scale.setScalar(sc);
   const wall = toon(0xfff6ea);
   const roof = toon(0xff5a7a);
@@ -1413,14 +1722,19 @@ function buildMoveBlocks() {
   const g1 = g.s1;
   const blanes = [-2.15, 0, 2.15];
   const candy = mapDef.id === 'candy';
-  const colors = candy
+  const colors = mapDef.blockColors || (candy
     ? [0xff8ec4, 0xffe14a, 0x7dface, 0xffb347]
-    : [0xe7f4ff, 0xffffff, 0xb7dcff, 0xd7e6f5];
+    : [0xe7f4ff, 0xffffff, 0xb7dcff, 0xd7e6f5]);
   const exitLip = g1 - 1.65;
+  // Static lips overlap the solid road so the gap mouth is never a crack.
+  for (let li = 0; li < 3; li++) {
+    pushBlock(g0 + 1.05, blanes[li], 'static', li * 0.2, colors[li % colors.length], 0, 0);
+    pushBlock(g1 - 1.05, blanes[li], 'static', li * 0.2, colors[(li + 1) % colors.length], 0, 0);
+  }
   const decks = [];
   let cursor = g0 + 1.65;
-  const span0 = candy ? 8.2 : 8.0;
-  const gapW = candy ? 1.85 : 1.8;
+  const span0 = mapDef.deckSpan || (candy ? 8.2 : 8.0);
+  const gapW = mapDef.deckGap || (candy ? 1.85 : 1.8);
   while (cursor + 5.6 < exitLip) {
     const room = exitLip - cursor;
     const span = room < span0 + gapW + 5.6 ? room : span0;
@@ -1428,51 +1742,57 @@ function buildMoveBlocks() {
     if (span < span0 - 0.2) break;
     cursor += span + gapW;
   }
-  const ampX = candy ? 1.05 : 1.15;
+  const ampX = mapDef.moveAmp != null ? mapDef.moveAmp : (candy ? 1.05 : 1.15);
   decks.forEach((deck) => {
-    const omit = -1;
-    for (let s = deck.near + 1.05; s <= deck.far - 1.0; s += 2.15) {
+    const rows = [];
+    for (let s = deck.near + 1.05; s <= deck.far - 1.0; s += 2.15) rows.push(s);
+    rows.forEach((s, ri) => {
+      const edgeRow = ri === 0 || ri === rows.length - 1;
       for (let li = 0; li < 3; li++) {
-        if (li === omit) continue;
         let kind = 'static';
         let amp = 0;
         let omega = 0;
-        if (deck.i > 0 && deck.far < exitLip - 0.2) {
+        // End rows stay put so the jump-off and landing decks cannot slide away.
+        // The center lane stays put too: a straight run must not drop through a
+        // plate that blinks or slides out from under x≈0.
+        if (!edgeRow && deck.i > 0 && deck.far < exitLip - 0.2) {
           const m = deck.i % 4;
           if (m === 1 && li !== 1) { kind = 'moveX'; amp = ampX; omega = candy ? 0.8 : 0.95; }
-          else if (m === 2 && li === 1) { kind = 'moveS'; amp = candy ? 0.55 : 0.6; omega = 0.85; }
-          else if (m === 3 && li === 1) kind = 'vanish';
+          else if (m === 2 && li === 0) { kind = 'moveS'; amp = candy ? 0.55 : 0.6; omega = 0.85; }
+          else if (m === 3 && li === 2) kind = 'vanish';
           else if (m === 0 && li === 0) { kind = 'moveX'; amp = ampX * 0.65; omega = 0.7; }
         }
-        pushBlock(s, blanes[li], kind, deck.i * 0.7 + li * 1.6, colors[(deck.i + li) % 4], amp, omega);
+        pushBlock(s, blanes[li], kind, deck.i * 0.7 + li * 1.6, colors[(deck.i + li) % colors.length], amp, omega);
       }
-    }
+    });
   });
 }
-function makeTile(s, x, phase, zone, color, half, always) {
+function makeTile(s, x, phase, zone, color, half, always, period, on) {
   return {
-    s, x, phase, zone: !!zone, color, half: half || 1.05,
-    hs: 1.15, period: 2.5, on: 1.9, top: 0.16, always: !!always,
+    s, x, phase, zone: !!zone, color, half: half || 1.18,
+    hs: 1.28, period: period || 2.5, on: on == null ? 1.9 : on, top: 0.16, always: !!always,
     offX: 0, offS: 0, solid: true, hidden: false, flash: false, kind: 'tile',
   };
 }
 function buildTileZone(z) {
   const lanes = [-2.2, 0, 2.2];
   const colors = z.colors || [0xff8ec4, 0xffe14a, 0x7dface];
-  const period = 2.5;
+  const period = z.period || 2.5;
+  const on = z.on == null ? 1.9 : z.on;
+  const half = z.half || 1.18;
   const gate = z.s0 + 1.05;
   for (let li = 0; li < lanes.length; li++) {
-    tiles.push(makeTile(gate, lanes[li], 0, true, colors[li % colors.length], 1.05, true));
+    tiles.push(makeTile(gate, lanes[li], 0, true, colors[li % colors.length], half, true, period, on));
   }
   for (let s = z.s0 + 3.3; s <= z.s1 - 2.5; s += 2.4) {
     for (let li = 0; li < 3; li++) {
-      tiles.push(makeTile(s, lanes[li], (li * period) / 3, true, colors[li % colors.length], 1.05, false));
+      tiles.push(makeTile(s, lanes[li], (li * period) / 3, true, colors[li % colors.length], half, false, period, on));
     }
   }
   // Solid lip so the row spacing cannot leave a cliff before the road returns.
   const lip = z.s1 - 1.05;
   for (let li = 0; li < 3; li++) {
-    tiles.push(makeTile(lip, lanes[li], 0, true, colors[li % colors.length], 1.05, true));
+    tiles.push(makeTile(lip, lanes[li], 0, true, colors[li % colors.length], half, true, period, on));
   }
 }
 function buildRotor(rs) {
@@ -1588,13 +1908,14 @@ function buildObstacles() {
     const f = forks[fi];
     if (f.rotorS) {
       rotors.push(buildRotor({
-        s: f.rotorS, x: f.shortX, halfLen: 1.35, omega: 1.05, phase: 0.4,
-        pivotY: 1.08, color: 0xfff6ea, cap: 0xff4d8d, short: true,
+        s: f.rotorS, x: f.shortX, halfLen: Math.min(1.05, (f.shortHalf || 1) * 0.95),
+        omega: f.rotorOmega || 1.05, phase: 0.4,
+        pivotY: 1.08, color: f.rotorColor || 0xfff6ea, cap: f.rotorCap || 0xff4d8d, short: true,
       }));
     }
     const tileS = f.tileS || [];
     for (let ti = 0; ti < tileS.length; ti++) {
-      tiles.push(makeTile(tileS[ti], f.shortX, 0.4 + ti * 0.85, false, 0xff8ec4, 0.95));
+      tiles.push(makeTile(tileS[ti], f.shortX, 0.4 + ti * 0.85, false, f.tileColor || 0xff8ec4, 0.92));
     }
   }
   for (let zi = 0; zi < tileZones.length; zi++) buildTileZone(tileZones[zi]);
@@ -1698,8 +2019,8 @@ function motionAt(b, t) {
     o.top = Math.sin(t * 1.35 + b.phase) * 0.1;
   } else if (b.kind === 'vanish') {
     const cyc = (t + b.phase) % 3;
-    if (cyc > 1.8) { o.solid = false; o.hidden = true; }
-    else if (cyc > 1.4) o.flash = true;
+    if (cyc > 1.85) { o.solid = false; o.hidden = true; }
+    else if (cyc > 1.22) o.flash = true;
   } else if (b.kind === 'moveX') {
     o.offX = Math.sin(t * (b.omega || 0.9) + b.phase) * (b.amp || 1);
   } else if (b.kind === 'moveS') {
@@ -1899,19 +2220,27 @@ function tileCovering(s, x) {
   }
   return best;
 }
-function bandSupport(s, x) {
+function bandHeight(kind) {
+  if (kind === 'short') return 0.05;
+  if (kind === 'center') return 0.02;
+  return 0;
+}
+function bandSupport(s, x, skipShort) {
   const bands = bandsAt(s);
   if (!bands) {
     if (Math.abs(x) <= W * 0.5 + 0.08) return { h: 0, carrier: null };
     return null;
   }
+  let best = null;
   for (let i = 0; i < bands.length; i++) {
     const b = bands[i];
+    if (skipShort && b.kind === 'short') continue;
     if (Math.abs(x - b.x) <= b.half + 0.08) {
-      return { h: b.kind === 'short' ? 0.05 : 0, carrier: null };
+      const h = bandHeight(b.kind);
+      if (!best || h > best.h) best = { h: h, carrier: null };
     }
   }
-  return null;
+  return best;
 }
 function queryGround(s, x) {
   if (inGap(s)) {
@@ -1923,7 +2252,12 @@ function queryGround(s, x) {
       if (Math.abs(bs - s) > 1.8) continue;
       const bx = blockX(b);
       if (Math.abs(s - bs) <= b.half + 0.02 && Math.abs(x - bx) <= b.half + 0.02) {
-        if (!best || b.top > best.h) best = { h: b.top, carrier: b };
+        // A side plate that swings across the center must not steal the carrier
+        // and drag a runner off the block they are standing on.
+        const score = Math.abs(x - bx) + Math.abs(s - bs) * 0.15;
+        if (!best || b.top > best.h + 0.02 || (b.top >= best.h - 0.02 && score < best.score)) {
+          best = { h: b.top, carrier: b, score };
+        }
       }
     }
     return best;
@@ -1931,10 +2265,16 @@ function queryGround(s, x) {
   const cover = tileCovering(s, x);
   if (cover) {
     if (cover.solid) return { h: cover.top, carrier: cover };
+    // A vanished shortcut plate only opens a hole on the shortcut itself.
+    // The center spine underneath stays walkable.
+    if (!cover.zone) {
+      const under = bandSupport(s, x, true);
+      if (under) return under;
+    }
     return null;
   }
   if (tileZoneAt(s)) return null;
-  return bandSupport(s, x);
+  return bandSupport(s, x, false);
 }
 
 /* =====================================================================
@@ -2236,6 +2576,9 @@ function resetRunner(r, s, x, air) {
   r.brain.hammerSide = {};
   r.brain.snowTax = 0;
   r.brain.padCap = 99;
+  r.brain.watchAt = null;
+  r.brain.watchS = 0;
+  r.brain.stuckN = 0;
   r.root.visible = true;
 }
 function placeMenu() {
@@ -2549,11 +2892,31 @@ function tryJump(r) {
   }
   if (r.vy <= 0) r.vy = Math.max(-30, r.vy - 6);
 }
+function nearestFloorX(s, prefer) {
+  const want = isFinite(prefer) ? prefer : 0;
+  if (queryGround(s, want)) return clamp(want, -3.3, 3.3);
+  let best = null;
+  let bestD = 1e9;
+  for (let i = 0; i <= 20; i++) {
+    const x = -4 + i * 0.4;
+    if (!queryGround(s, x)) continue;
+    const d = Math.abs(x - want);
+    if (d < bestD) { bestD = d; best = x; }
+  }
+  return best == null ? 0 : best;
+}
+function supportedShove(r, push) {
+  const dir = Math.sign(push) || 1;
+  const holds = (x) => !!(queryGround(r.s, x) || queryGround(Math.min(trackLength - 1, r.s + 0.5), x));
+  if (holds(r.x + dir * 0.85)) return dir * 2.6;
+  if (holds(r.x - dir * 0.85)) return -dir * 2.2;
+  return 0;
+}
 function knock(r, push, why) {
   if (r.knockT > 0 || r.finished || r.dnf || r.respawnT > 0) return;
   r.knockT = 0.9;
   r.vs = 0;
-  r.vx = (push || 0) * 4.5;
+  r.vx = (why === 'rotor' || why === 'hammer') ? supportedShove(r, push || 0) : (push || 0) * 4.5;
   r.landDashT = 0;
   if (why === 'wall' && mapDef.id === 'snow') {
     r.vy = 0;
@@ -2584,10 +2947,17 @@ function doRespawn(r) {
   }
   const cp = checkpoints[r.checkpointIndex] || 0;
   let s = cp + 2.2 + (r.id % 3) * 0.7;
-  if (s > trackLength - 8) s = cp;
+  if (s > trackLength - 8) s = Math.max(0, Math.min(cp, trackLength - 8));
+  let guard = 0;
+  while (guard < 16 && s < trackLength - 6 && !queryGround(s, 0) && !queryGround(s, 1.4) && !queryGround(s, -1.4)) {
+    s += 1.25;
+    guard++;
+  }
   r.s = s;
-  r.x = r.profile ? clamp(r.profile.preferredLane, -2.1, 2.1) : 0;
-  r.y = 0;
+  const prefer = (!r.isPlayer && r.profile && isFinite(r.profile.preferredLane)) ? r.profile.preferredLane : 0;
+  r.x = nearestFloorX(s, prefer);
+  const gnd = queryGround(s, r.x);
+  r.y = gnd ? gnd.h : 0;
   r.vs = 0; r.vx = 0; r.vy = 0;
   r.grounded = true;
   r.jumpsUsed = 0;
@@ -2628,8 +2998,8 @@ function forkChoiceOf(r, f) {
 }
 function railOne(r) {
   if (r.finished || r.dnf || r.respawnT > 0) return;
-  const ai = !r.isPlayer || autopilot;
-  if (!ai) return;
+  // Human steering stays analog. Never snap the player onto a lane.
+  if (r.isPlayer && !autopilot) return;
   const nar = narrowAt(r.s);
   if (nar) {
     const lim = Math.max(0.05, narrowHalfAt(nar, r.s) - 0.12);
@@ -2963,9 +3333,12 @@ function hazards() {
         const py = (r.y + 0.72) - rot.pivotY;
         const dist = px * Math.sin(th) + py * Math.cos(th);
         const along = -px * Math.cos(th) + py * Math.sin(th);
-        if (Math.abs(dist) < 0.36 && Math.abs(along) < rot.halfLen + 0.05) {
+        if (Math.abs(dist) < 0.3 && Math.abs(along) < rot.halfLen + 0.02) {
           knock(r, Math.sign(px) || 1, 'rotor');
-          r.s = rot.s - 3.2;
+          r.s = Math.max(0, rot.s - 2.4);
+          if (!queryGround(r.s, r.x)) r.x = nearestFloorX(r.s, r.x);
+          const seat = queryGround(r.s, r.x);
+          if (seat) { r.y = Math.max(r.y, seat.h); r.grounded = true; r.vy = 0; }
           break;
         }
       }
@@ -3197,8 +3570,8 @@ function thinkAI(r, dt) {
   const gAp = gaps.length ? gaps[0] : null;
   const GAP0 = gAp ? gAp.s0 : 1e9;
   const GAP1 = gAp ? gAp.s1 : -1;
-  // hurdles
-  if (r.s > 118 && r.s < GAP0 - 6) {
+  // hurdles (lava starts ~110; old gate s>118 skipped the first bars → softlock)
+  if (r.s > 55 && r.s < GAP0 - 6) {
     for (let i = 0; i < hurdleRows.length; i++) {
       const row = hurdleRows[i];
       const ds = row.s - r.s;
@@ -3850,7 +4223,7 @@ function refreshTicks() {
 }
 function starsText(d) {
   let s = '';
-  for (let i = 1; i <= 3; i++) s += i <= d ? '★' : '☆';
+  for (let i = 1; i <= 5; i++) s += i <= d ? '★' : '☆';
   return s;
 }
 function refreshMapCard() {
@@ -4015,7 +4388,7 @@ function bindInput() {
     pointers.dx = 0;
     showJoy(e.clientX, e.clientY);
     moveJoy(0, 0);
-    steer.setPointerCapture(e.pointerId);
+    try { steer.setPointerCapture(e.pointerId); } catch (err) { /* pointer already gone */ }
     e.preventDefault();
   });
   steer.addEventListener('pointermove', (e) => {
@@ -4040,7 +4413,7 @@ function bindInput() {
     unlockAudio();
     pointers.jumpIds.add(e.pointerId);
     human.jumpQueue++;
-    jumpBtn.setPointerCapture(e.pointerId);
+    try { jumpBtn.setPointerCapture(e.pointerId); } catch (err) { /* pointer already gone */ }
   });
   const endJump = (e) => pointers.jumpIds.delete(e.pointerId);
   jumpBtn.addEventListener('pointerup', endJump);
@@ -4053,7 +4426,7 @@ function bindInput() {
     unlockAudio();
     pointers.dashIds.add(e.pointerId);
     human.dashEdge = true;
-    dashBtn.setPointerCapture(e.pointerId);
+    try { dashBtn.setPointerCapture(e.pointerId); } catch (err) { /* pointer already gone */ }
   });
   const endDash = (e) => pointers.dashIds.delete(e.pointerId);
   dashBtn.addEventListener('pointerup', endDash);
@@ -4285,6 +4658,57 @@ function updateCountdown(dt) {
     sfx('go');
   }
 }
+function watchStuck(r) {
+  if ((r.isPlayer && !autopilot) || r.finished || r.dnf || !r.brain) return;
+  if (r.respawnT > 0 || r.knockT > 0 || raceTime < 2) return;
+  if (r.brain.watchAt == null) {
+    r.brain.watchAt = raceTime;
+    r.brain.watchS = r.s;
+    return;
+  }
+  if (r.vs > 3.2 || r.s > r.brain.watchS + 3) {
+    r.brain.watchS = r.s;
+    r.brain.watchAt = raceTime;
+    r.brain.stuckN = 0;
+    return;
+  }
+  if (raceTime - r.brain.watchAt < 7) return;
+  r.brain.stuckN = (r.brain.stuckN || 0) + 1;
+  r.brain.watchAt = raceTime;
+  r.brain.watchS = r.s;
+  r.knockT = 0;
+  r.exhaustedT = 0;
+  if (r.brain.padCap < 1) r.brain.padCap = 99;
+  if (r.brain.stuckN < 3) {
+    r.vs = Math.max(r.vs, 8);
+    r.vx = 0;
+    if (!r.grounded) r.vy = Math.max(r.vy, 8);
+    else r.jumpEdge = true;
+    return;
+  }
+  let dest = r.s + 18;
+  for (let i = 0; i < checkpoints.length; i++) {
+    if (checkpoints[i] > r.s + 8) { dest = checkpoints[i] + 3; break; }
+  }
+  dest = Math.min(dest, trackLength - 8);
+  let guard = 0;
+  while (guard < 14 && dest < trackLength - 4 && !queryGround(dest, 0)) {
+    dest += 2;
+    guard++;
+  }
+  r.s = dest;
+  r.x = nearestFloorX(dest, 0);
+  const g = queryGround(dest, r.x);
+  r.y = g ? g.h : 0;
+  r.vy = 0; r.vs = 8; r.vx = 0;
+  r.grounded = true;
+  r.checkpointIndex = cpIndexAt(r.s);
+  r.carrier = null;
+  r.brain.stuckN = 0;
+  r.brain.watchS = r.s;
+  r.brain.forkAt = -1;
+  r.brain.forkChoice = null;
+}
 function updateRaceRules(dt) {
   if (mode === 'vs') {
     let any = false;
@@ -4336,6 +4760,7 @@ function simulate(dt) {
     if (r.isPlayer && !autopilot) readHuman(r);
     else thinkAI(r, dt);
     stepRunner(r, dt);
+    if (screen === 'race') watchStuck(r);
   }
   collideRunners();
   railRunners();
@@ -4527,6 +4952,8 @@ function frame(now) {
     updateConfetti(realDt);
   } else if (screen === 'paused') {
     acc = 0;
+  } else if (simHold) {
+    acc = 0;
   } else {
     acc += realDt * timeScale;
     let steps = 0;
@@ -4617,7 +5044,8 @@ function buildRoads() {
   for (let i = 0; i < narrows.length; i++) segs = subtractRange(segs, narrows[i].s0, narrows[i].s1);
   for (let i = 0; i < forks.length; i++) segs = subtractRange(segs, forks[i].s0, forks[i].sMerge);
   for (let i = 0; i < tileZones.length; i++) segs = subtractRange(segs, tileZones[i].s0, tileZones[i].s1);
-  const roadPal = mapDef.theme.road === 'candy' ? 'candy' : (mapDef.theme.road === 'snow' ? 'snow' : null);
+  const namedRoad = { candy: 1, snow: 1, cloud: 1, lava: 1 };
+  const roadPal = namedRoad[mapDef.theme.road] ? mapDef.theme.road : null;
   for (let i = 0; i < segs.length; i++) buildRoad(segs[i][0], segs[i][1], { palette: roadPal });
   for (let i = 0; i < narrows.length; i++) {
     const n = narrows[i];
@@ -4657,6 +5085,18 @@ function buildRoads() {
         return g ? g.x : 0;
       },
     });
+    buildRoad(f.s0, f.sMerge, {
+      palette: 'center',
+      yLift: 0.02,
+      halfFn: function (s) {
+        const g = forkCenterGeom(f, s);
+        return g ? g.half : 1.35;
+      },
+      xFn: function (s) {
+        const g = forkCenterGeom(f, s);
+        return g ? g.x : 0;
+      },
+    });
   }
 }
 function applyTheme() {
@@ -4680,7 +5120,7 @@ function loadMap(id) {
   narrows = mapDef.narrows || [];
   forks = mapDef.forks || [];
   tileZones = mapDef.tileZones || [];
-  roadStep = mapDef.targetLen > 900 ? 1.45 : (mapDef.targetLen > 650 ? 1.2 : 1);
+  roadStep = mapDef.step || (mapDef.targetLen > 900 ? 1.45 : (mapDef.targetLen > 650 ? 1.2 : 1));
   clearWorld();
   blocks = [];
   hurdles = [];
@@ -4880,6 +5320,15 @@ function installTestHook() {
     autopilot: (on) => {
       autopilot = !!on;
       if (player) player.speedMul = autopilot ? STRONG.speedMul : 1;
+    },
+    support: (s, x) => {
+      const g = queryGround(+s || 0, +x || 0);
+      return { ok: !!g, h: g ? g.h : null };
+    },
+    hold: (on) => { simHold = !!on; },
+    sim: (sec) => {
+      const steps = Math.max(1, Math.round((+sec || 0) / FIXED));
+      for (let i = 0; i < steps; i++) simulate(FIXED);
     },
     timeScale: (n) => { timeScale = clamp(n | 0, 1, 8); },
     seed: (n) => { fixedSeed = n == null ? null : (n | 0); },
